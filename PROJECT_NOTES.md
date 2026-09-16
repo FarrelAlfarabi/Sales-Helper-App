@@ -187,3 +187,59 @@ a real test employee account.
 4. Decide leave-request scope (needs the user, since it changes the
    Attendance data model).
 5. Pricing and Summary Activity: not started, no schema yet.
+
+---
+
+## Session 2 -- 2026-09-16
+
+User ran the app for real (`flutter run -d web-server`) on a GitHub
+Codespace -- first actual compiler run this project has had. It found
+real bugs, exactly as expected/flagged in Session 1.
+
+### Bug found and fixed: missing imports crashed the web compiler
+
+`login_screen.dart`, `clock_in_screen.dart`, `store_visit_screen.dart`,
+and `osa_screen.dart` all use Supabase types (`AuthException`,
+`FileOptions`) but only imported `core/supabase_client.dart` -- not
+`package:supabase_flutter/supabase_flutter.dart` directly. Dart imports
+are not transitive, so those types were unresolved. Two symptoms from one
+root cause:
+
+- `on AuthException catch (e)` -> `Error: 'AuthException' isn't a type.`
+- `const FileOptions(contentType: 'image/jpeg')` (three call sites) ->
+  `Error: Not a constant expression.`
+- The `AuthException` one was worse than a normal compile error: dartdevc
+  (the web dev compiler) doesn't handle an unresolved type flowing into a
+  `catch` clause gracefully and crashed outright ("Unsupported operation:
+  Unsupported invalid type InvalidType"), which is what produced the
+  opaque "Dart compiler exited unexpectedly" failure the user hit first.
+
+**Before assuming the import fix was the whole story**, checked whether
+`FileOptions`'s constructor is actually `const`-eligible in the real
+installed version (2.8.0 of `storage_client`, resolved via
+`supabase_flutter` 2.17.2 -> `supabase` 2.16.1 -> `storage_client` 2.8.0)
+by downloading that exact package source from pub.dev and reading the
+class definition directly -- confirmed `const FileOptions({...})`, so the
+`const` usage was always valid and the error really was just the missing
+import, not a second bug.
+
+**Fix**: added `export 'package:supabase_flutter/supabase_flutter.dart';`
+to `core/supabase_client.dart` instead of adding the same import to four
+files separately -- any file importing `core/supabase_client.dart` for
+the `supabase` getter now gets Supabase's types too.
+
+### Still not verified
+
+This fixes the specific compile errors reported. It has **not** been
+re-run -- I don't have a Flutter SDK in this environment, only the
+package sources I downloaded to check the fix. The user needs to `git
+pull` and re-run `flutter run -d web-server` to confirm this was the only
+issue; there could be more compile errors behind this one that just
+hadn't been reached yet.
+
+Also worth noting for whoever debugs the next one: the Codespaces
+`flutter build web` / `flutter run -d web-server` proceeded without web
+platform files present ("This application is not configured to build on
+the web" was a warning, not a hard stop) -- `flutter create --platforms
+android,web .` from the README still needs to actually be run at some
+point; it was skipped in this session's test run.
