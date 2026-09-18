@@ -243,3 +243,32 @@ platform files present ("This application is not configured to build on
 the web" was a warning, not a hard stop) -- `flutter create --platforms
 android,web .` from the README still needs to actually be run at some
 point; it was skipped in this session's test run.
+
+### Bug found and fixed: permanent white screen on slow/stuck init
+
+After the import fix, the user hit a second real issue: the app compiled
+and served, but the browser tab just showed a permanent blank white
+screen, no spinner, no error, no console output reported.
+
+Root cause: `main()` did `await core.initSupabase()` **before**
+`runApp()`. Nothing paints to the screen until `runApp()` is called, so if
+that Supabase init call is slow, blocked (e.g. a network/CORS quirk in
+the Codespaces container), or just taking a while on a debug web build,
+the tab stays blank indefinitely with zero user-visible signal that
+anything is happening or wrong.
+
+**Fix**: moved `runApp()` to happen immediately in `main()`, and added a
+`BootGate` widget that runs `initSupabase()` afterward, behind a
+`FutureBuilder` with a 15s timeout -- shows a spinner while connecting,
+an actual error message on failure/timeout, and only then hands off to
+`AuthGate`. The 15s figure is a guess for a debug web build on a
+Codespace, not measured -- may need tuning.
+
+**Not yet confirmed this was the (only) cause of the white screen** -- I
+never got the browser console output from the stuck session to confirm
+it definitively; this fix addresses the general failure mode (silent
+blank screen on any startup failure) regardless of the specific trigger.
+If the white screen recurs after this fix, it'll now show either a
+spinner (still loading -- give it longer) or a real error message
+(actual bug to chase), which narrows the next debugging step
+considerably compared to "it's just white."
