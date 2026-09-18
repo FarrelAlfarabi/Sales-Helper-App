@@ -45,16 +45,26 @@ to end until that's actually been done.
   - Approve/reject pending leave requests
   - Attendance report and store visit report across all employees, with
     the geofence "inside/outside zone" flag shown directly on each visit
+- **Add Employee** (visible only to one specific admin login) -- creates
+  a real Supabase Auth account via a server-side function, so the
+  database's admin key never touches the phone. Deployed, but not yet
+  exercised with a real request from the app -- first real use of this
+  screen doubles as its test.
 
 ## Not built yet
 
 - Pricing module -- no spec exists for what this should do yet.
 - Summary Activity module -- same.
-- In-app employee account creation -- still a manual step in the Supabase
-  dashboard; doing it from the app safely needs a small server-side
-  function first.
 - Web admin panel as a distinct experience -- manager tools currently
   live inside the same app as the field-rep flows, just gated by role.
+
+## Fixed along the way, worth knowing about
+
+- A gap in the original permissions let any employee grant themselves
+  admin access by editing their own profile. Closed before the admin
+  dashboard was built, since it would have defeated the point of
+  restricting the dashboard at all. No evidence it was exploited --
+  found during review, not from an incident.
 
 ## Known, deliberate limitations to mention if asked
 

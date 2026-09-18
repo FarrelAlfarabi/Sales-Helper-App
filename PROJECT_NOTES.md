@@ -361,3 +361,108 @@ Session 2, restated because "finish all of it" implied otherwise)
    exists: add a real store, assign yourself to it, submit a leave
    request, approve it as admin, and see if the reports actually render
    real rows correctly.
+
+---
+
+## Session 4 -- 2026-09-18 (later same day)
+
+User asked for an admin-only dashboard to create new employee accounts
+(answering Session 3's open question), gated to their own login
+specifically. Also reported the white screen again after Session 3's
+push, with no fresh terminal/console output provided yet.
+
+### Security fix found while building this (before the feature itself)
+
+While designing "admin login is the only thing that can access it,"
+re-read the `profiles_update_own` RLS policy from Session 1 and found it
+never restricted which columns a user could change on their own row --
+including `role`. As written since Session 1, **any authenticated
+field_rep could have run `update profiles set role = 'admin'` on
+themselves from the app and granted themselves admin/manager access.**
+This was live for 3 days before being caught.
+
+Fixed via migration `prevent_role_self_escalation`: a `before update`
+trigger on `profiles` that raises an exception if `role` changes and the
+actor isn't already manager/admin (checked via the existing
+`is_manager_or_admin()`, skipped when `auth.uid()` is null, i.e. a
+trusted direct-SQL/dashboard context). Verified live: confirmed the
+trigger exists in `pg_trigger`, and confirmed a service-context update
+still succeeds (didn't break normal SQL-based admin work). **Not**
+verified against an actual non-admin authenticated session attempting the
+escalation, since that needs a second real test account and a real JWT,
+which this environment can't produce -- logic-reviewed, not
+exercised end-to-end.
+
+### Also found while testing: the admin account wasn't actually admin
+
+Queried `profiles` directly and found the account created in Session 2
+had `role = 'field_rep'`, not `admin` -- the `role` metadata either wasn't
+set when the account was created via the dashboard, or wasn't read
+correctly. This means **every manager-only tile added in Session 3 was
+never actually visible** to the user testing it; that's a likely
+contributing factor to confusion about what was/wasn't working, separate
+from the white-screen issue. Promoted the account to `admin` directly
+via SQL (verified by reading the row back).
+
+### Added: admin-only "Add Employee" feature
+
+- **`supabase/functions/admin-create-user/index.ts`** -- a Supabase Edge
+  Function, deployed and ACTIVE. This exists specifically because
+  creating a Supabase Auth user requires the `service_role` key, which
+  must never reach the Flutter client (embedding it there would let
+  anyone who decompiles the app read/write the entire database, not just
+  create accounts) -- declined that approach even though it would've
+  been less work, as noted in Session 3.
+  - Authorization is two independent checks, both required: (1) the
+    caller's own JWT is verified against Supabase Auth (not a
+    client-supplied claim) and its email must exactly match
+    `ADMIN_EMAIL`; (2) the caller's `profiles.role` must be `admin`,
+    checked with the service-role client. Requested explicitly: gate this
+    to one specific login, not just "any admin."
+  - `ADMIN_EMAIL` is read from an environment secret with a hard-coded
+    fallback of `farrel.abi.saleh@gmail.com` (the email on file for this
+    account) -- **I don't have a tool that can set Supabase Edge Function
+    secrets**, so right now the function is actually running on the
+    hard-coded fallback, not a secret. To move it to a real secret and
+    stop relying on the fallback: Supabase Dashboard -> Edge Functions ->
+    `admin-create-user` -> Secrets, add `ADMIN_EMAIL`, or `supabase
+    secrets set ADMIN_EMAIL=...` via the CLI. Flagging plainly that this
+    email is currently sitting in committed source as plaintext, not a
+    secret store, since that's a call about this specific repo's
+    visibility the user should make consciously rather than discover
+    later.
+  - Validates password length (>=8) and constrains `role` to the three
+    known enum values before calling `auth.admin.createUser(...)`.
+  - **Deployed but not test-invoked end to end.** I have no way to obtain
+    a real user JWT from this environment (would need the actual account
+    password), so the actual request/response flow through Supabase Auth
+    has not been exercised -- the first real use of the "Add Employee"
+    screen in the app IS that test. If it fails, the error will come back
+    from this function's own checks (401/403/400 with a message) rather
+    than a generic crash, which should make it diagnosable.
+- **`lib/features/admin/user_management_screen.dart`** -- form (full
+  name, email, temporary password, role) that calls the Edge Function via
+  `supabase.functions.invoke`. Verified the `invoke()` signature and
+  `FunctionException` shape against the actual installed `functions_client`
+  2.7.1 source rather than assuming.
+- **`home_screen.dart`**: "Add Employee" tile shown only when
+  `currentUser.email == 'farrel.abi.saleh@gmail.com'` (case-insensitive),
+  not merely `role == 'admin'` -- matches the explicit "use my email"
+  request. Same caveat as every other tile: this is display logic only,
+  the Edge Function's own checks are the real gate.
+
+### White screen reported again -- unresolved, need fresh diagnostics
+
+No new terminal or browser console output was provided with this report,
+so I can't yet tell whether it's: (a) a new compile error from Session
+3's additions never actually reaching a clean build, (b) the Session 2
+BootGate fix not actually being live (old process still running / not
+hot-restarted), or (c) something new. Asked the user directly for the
+same diagnostics as before (terminal output since `git pull` and browser
+console). Not fixing blind a second time on this one.
+
+### Still open from Session 3, unchanged
+
+- Pricing and Summary Activity: still no spec.
+- Native platform folders, real-device verification, deployment, push
+  notifications: still not possible from this environment.

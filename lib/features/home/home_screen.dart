@@ -3,12 +3,21 @@ import 'package:flutter/material.dart';
 import '../../core/supabase_client.dart';
 import '../admin/store_assignment_screen.dart';
 import '../admin/store_management_screen.dart';
+import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
+
+// Gates the "Add Employee" tile specifically to this one account, per an
+// explicit request that it be reachable only from this login -- not any
+// account that happens to have role='admin'. This is a UI convenience
+// only: the admin-create-user Edge Function independently re-checks this
+// exact email (plus role='admin') server-side, so hiding/showing this
+// tile is never itself the real access control.
+const _kAdminEmail = 'farrel.abi.saleh@gmail.com';
 
 /// Home menu, mirroring the reference deck's layout plus what's been added
 /// since: Attendance, Leave, Store Visit (which leads into On Shelf
@@ -137,6 +146,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () => _push(context, const StoreVisitReportScreen()),
                             ),
                           ],
+                          if (email.toLowerCase() == _kAdminEmail)
+                            _MenuTile(
+                              icon: Icons.person_add,
+                              label: 'Add Employee',
+                              onTap: () => _push(context, const UserManagementScreen()),
+                            ),
                         ],
                       ),
               ),
