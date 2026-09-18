@@ -272,3 +272,92 @@ If the white screen recurs after this fix, it'll now show either a
 spinner (still loading -- give it longer) or a real error message
 (actual bug to chase), which narrows the next debugging step
 considerably compared to "it's just white."
+
+By this point the user had created a real admin account through the
+Supabase dashboard (`profiles` shows 1 row) -- first real account this
+project has had.
+
+---
+
+## Session 3 -- 2026-09-18
+
+User asked to "finish all of it" against the full gap list from Session
+2. Pushed back on treating that as one task: some of it is buildable
+immediately from the existing schema, some needs a decision first
+(building blind wastes real work), some is structurally impossible from
+this environment. Built the unambiguous, unblocked part now.
+
+### Added this session (schema + Flutter screens, applied and verified)
+
+- **`leave_requests` migration** (10th migration) -- sick/permit/off-day/
+  leave, simple `pending -> approved/rejected` status, reviewed by any
+  manager/admin (no reporting-line concept exists), employee can cancel
+  only while still pending. Does NOT interact with clock-in/out in any
+  way -- deliberately not wired together, since whether approved leave
+  should block clock-in is a policy call nobody's made. Verified live via
+  `list_tables` (RLS enabled, table present).
+- **`lib/features/leave/leave_screen.dart`** -- employee: submit a
+  request, see own history, cancel while pending.
+- **`lib/features/leave/leave_review_screen.dart`** -- manager: list
+  pending requests across everyone, approve/reject.
+- **`lib/features/admin/store_management_screen.dart`** -- manager: list
+  stores, add a new one. Lat/lng are typed in by hand, no map picker --
+  flagged in-file because a typo here silently breaks geofencing for that
+  whole store with no in-app safeguard.
+- **`lib/features/admin/store_assignment_screen.dart`** -- manager:
+  assign a field_rep to a store, view/deactivate current assignments.
+  Verified the `upsert(..., onConflict: 'employee_id,store_id')` call
+  against postgrest 2.9.1's actual source (downloaded from pub.dev) rather
+  than assuming the parameter shape.
+- **`lib/features/reports/attendance_report_screen.dart`** and
+  **`store_visit_report_screen.dart`** -- manager: read-only history
+  views. Visit report surfaces the server-computed `is_within_geofence`
+  flag directly, which is the whole point of the trigger from Session 1.
+  Both capped at 200 rows, no pagination yet -- fine for a demo, not for
+  real volume.
+- **`home_screen.dart`** rewritten to fetch the signed-in user's role from
+  `profiles` and show the five manager-only tiles only to
+  `manager`/`admin`. Note: hiding a tile is a UI convenience, not access
+  control -- RLS on the underlying tables is what actually stops a
+  `field_rep` from reading/writing manager-only data, same as always.
+
+### Explicitly declined to build blind, asked the user instead
+
+- **Pricing and Summary Activity modules**: the reference deck names
+  them with zero description of what they do. There's nothing to build a
+  schema from without guessing at business requirements that are the
+  client's to define, not mine.
+- **In-app employee account creation**: doing this from the Flutter
+  client would require either a Supabase Edge Function holding the
+  secret `service_role` key (real work, correct architecture) or
+  embedding that key in the client app (a severe vulnerability -- it
+  would let anyone who decompiles the app read/write the entire
+  database, not just create users). Declined to build the insecure
+  version regardless of how the request is phrased; asked whether the
+  Edge Function is worth building or manual dashboard provisioning stays
+  fine.
+
+### Still structurally impossible from this environment (unchanged from
+Session 2, restated because "finish all of it" implied otherwise)
+
+- No Flutter SDK here -- `android/`/`ios/` folders still not generated,
+  nothing in this session was run or analyzed, same caveat as every prior
+  session's code.
+- No Play Console / Apple Developer / Vercel accounts -- cannot deploy
+  anything anywhere.
+- No real phone -- camera/GPS permission behavior for any screen,
+  old or new, remains unverified on real hardware.
+- Push notifications -- not attempted; needs Firebase/APNs setup plus a
+  decision on what should actually trigger one.
+
+### Next
+
+1. Answer on Pricing/Summary Activity scope, and on the Edge Function
+   question, before more admin-side work happens.
+2. Run `flutter create`, `flutter pub get`, `flutter analyze` on all of
+   this -- none of this session's code has been compiled, same caveat as
+   every session so far.
+3. Exercise the new screens for real now that a real admin account
+   exists: add a real store, assign yourself to it, submit a leave
+   request, approve it as admin, and see if the reports actually render
+   real rows correctly.

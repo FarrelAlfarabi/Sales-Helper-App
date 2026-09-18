@@ -4,20 +4,21 @@ For whoever demos this to PT. Logic Soft Computer or a client. Kept in
 sync with every feature actually built -- if it's not in this doc, don't
 demo it as working.
 
-**Current state (2026-09-15): schema and backend logic are live and
-verified at the database level. The Flutter app has not yet been built or
-run on a device.** This doc describes the intended flow so the demo script
-is ready once the app is built and tested -- don't present any of this as
-already working end to end.
+**Current state (2026-09-18): schema and backend logic are live and
+verified at the database level, with a real admin account created. The
+Flutter app has not yet been compiled, analyzed, or run on a device from
+this project's side** -- don't present any of this as already working end
+to end until that's actually been done.
 
 ---
 
 ## What's real right now
 
 - A live Supabase project with the full data model: employees, stores
-  (with geofence), attendance, store visits, product placement photos.
-- Real login: an employee account created by an admin, authenticated with
-  a real email + password, not a placeholder.
+  (with geofence), attendance, store visits, product placement photos,
+  leave requests.
+- Real login: a real admin account exists, authenticated with a real
+  email + password, not a placeholder.
 - The rule that decides "was this employee actually at the store" runs on
   the server, not the phone -- so it can't be tricked by just saying yes.
 
@@ -35,16 +36,25 @@ already working end to end.
 - **On Shelf Availability** -- after a store visit, log a photo for each
   shelf location that applies (main shelf, checkout display, secondary
   display).
+- **Leave requests** -- submit sick/permit/off-day/leave with a date
+  range and reason; cancel while still pending.
+- **Manager tools** (only visible to `manager`/`admin` accounts):
+  - Add and list stores (geofence center + radius set by hand -- no map
+    picker yet)
+  - Assign employees to stores
+  - Approve/reject pending leave requests
+  - Attendance report and store visit report across all employees, with
+    the geofence "inside/outside zone" flag shown directly on each visit
 
 ## Not built yet
 
-- Manager-facing reports (attendance history, visit history, geofence
-  flags) -- data model supports it, no screens yet.
-- Pricing module.
-- Summary Activity module.
-- Leave requests (sick / permit / off day / leave) -- only clock in/out
-  exists.
-- Web admin panel.
+- Pricing module -- no spec exists for what this should do yet.
+- Summary Activity module -- same.
+- In-app employee account creation -- still a manual step in the Supabase
+  dashboard; doing it from the app safely needs a small server-side
+  function first.
+- Web admin panel as a distinct experience -- manager tools currently
+  live inside the same app as the field-rep flows, just gated by role.
 
 ## Known, deliberate limitations to mention if asked
 
@@ -55,3 +65,8 @@ already working end to end.
   indefinitely until we decide otherwise.
 - No offline support -- a field rep with no signal can't submit until
   they have signal again.
+- Leave requests don't affect attendance in any way -- approving a leave
+  request doesn't block or flag a clock-in on that date. That's a policy
+  decision nobody's made yet, not an oversight.
+- Reports show at most the 200 most recent rows, no pagination or
+  filtering yet.

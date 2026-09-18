@@ -1,16 +1,55 @@
 import 'package:flutter/material.dart';
 
 import '../../core/supabase_client.dart';
+import '../admin/store_assignment_screen.dart';
+import '../admin/store_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
+import '../leave/leave_review_screen.dart';
+import '../leave/leave_screen.dart';
+import '../reports/attendance_report_screen.dart';
+import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
 
-/// Home menu, mirroring the reference deck's layout: Attendance, Pricing,
-/// Store Visit, On Shelf Availability, Summary Activity. Pricing and
-/// Summary Activity are placeholders -- out of scope for this pass, which
-/// covers only the schema/flows the project brief asked for (attendance,
-/// store visits, product placement). See PROJECT_NOTES.md.
-class HomeScreen extends StatelessWidget {
+/// Home menu, mirroring the reference deck's layout plus what's been added
+/// since: Attendance, Leave, Store Visit (which leads into On Shelf
+/// Availability), and -- for manager/admin only -- Store management,
+/// Store assignments, Leave review, and the two reports. Pricing and
+/// Summary Activity are still placeholders: the reference deck names them
+/// but describes no actual functionality, so there's nothing to build
+/// them from yet. See PROJECT_NOTES.md.
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isManagerOrAdmin = false;
+  bool _loadingRole = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    try {
+      final userId = supabase.auth.currentUser!.id;
+      final row = await supabase.from('profiles').select('role').eq('id', userId).single();
+      setState(() => _isManagerOrAdmin = row['role'] == 'manager' || row['role'] == 'admin');
+    } catch (_) {
+      // Role check failing just hides manager tiles -- RLS is still the
+      // real access control on every underlying table/screen regardless.
+    } finally {
+      setState(() => _loadingRole = false);
+    }
+  }
+
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,37 +73,72 @@ class HomeScreen extends StatelessWidget {
             children: [
               Text('Signed in as $email', style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 16),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  children: [
-                    _MenuTile(
-                      icon: Icons.calendar_today,
-                      label: 'Attendance',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ClockInScreen()),
-                      ),
-                    ),
-                    const _MenuTile(icon: Icons.sell, label: 'Pricing (not built yet)'),
-                    _MenuTile(
-                      icon: Icons.storefront,
-                      label: 'Store Visit',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const StoreVisitScreen()),
-                      ),
-                    ),
-                    const _MenuTile(
-                      icon: Icons.shelves,
-                      label: 'On Shelf Availability (via Store Visit)',
-                    ),
-                    const _MenuTile(
-                      icon: Icons.summarize,
-                      label: 'Summary Activity (not built yet)',
-                    ),
-                  ],
+              if (!_loadingRole && _isManagerOrAdmin)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Text('Manager tools', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
+              Expanded(
+                child: _loadingRole
+                    ? const Center(child: CircularProgressIndicator())
+                    : GridView.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        children: [
+                          _MenuTile(
+                            icon: Icons.calendar_today,
+                            label: 'Attendance',
+                            onTap: () => _push(context, const ClockInScreen()),
+                          ),
+                          const _MenuTile(icon: Icons.sell, label: 'Pricing (not built yet)'),
+                          _MenuTile(
+                            icon: Icons.storefront,
+                            label: 'Store Visit',
+                            onTap: () => _push(context, const StoreVisitScreen()),
+                          ),
+                          const _MenuTile(
+                            icon: Icons.shelves,
+                            label: 'On Shelf Availability (via Store Visit)',
+                          ),
+                          const _MenuTile(
+                            icon: Icons.summarize,
+                            label: 'Summary Activity (not built yet)',
+                          ),
+                          _MenuTile(
+                            icon: Icons.beach_access,
+                            label: 'Leave',
+                            onTap: () => _push(context, const LeaveScreen()),
+                          ),
+                          if (_isManagerOrAdmin) ...[
+                            _MenuTile(
+                              icon: Icons.store,
+                              label: 'Manage Stores',
+                              onTap: () => _push(context, const StoreManagementScreen()),
+                            ),
+                            _MenuTile(
+                              icon: Icons.assignment_ind,
+                              label: 'Store Assignments',
+                              onTap: () => _push(context, const StoreAssignmentScreen()),
+                            ),
+                            _MenuTile(
+                              icon: Icons.fact_check,
+                              label: 'Review Leave Requests',
+                              onTap: () => _push(context, const LeaveReviewScreen()),
+                            ),
+                            _MenuTile(
+                              icon: Icons.assessment,
+                              label: 'Attendance Report',
+                              onTap: () => _push(context, const AttendanceReportScreen()),
+                            ),
+                            _MenuTile(
+                              icon: Icons.map,
+                              label: 'Store Visit Report',
+                              onTap: () => _push(context, const StoreVisitReportScreen()),
+                            ),
+                          ],
+                        ],
+                      ),
               ),
             ],
           ),
