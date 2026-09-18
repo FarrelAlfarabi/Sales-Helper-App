@@ -19,13 +19,11 @@ import '../store_visit/store_visit_screen.dart';
 // tile is never itself the real access control.
 const _kAdminEmail = 'farrel.abi.saleh@gmail.com';
 
-/// Home menu, mirroring the reference deck's layout plus what's been added
-/// since: Attendance, Leave, Store Visit (which leads into On Shelf
-/// Availability), and -- for manager/admin only -- Store management,
-/// Store assignments, Leave review, and the two reports. Pricing and
-/// Summary Activity are still placeholders: the reference deck names them
-/// but describes no actual functionality, so there's nothing to build
-/// them from yet. See PROJECT_NOTES.md.
+/// Home menu. Redesigned from a grid-of-icons into grouped rows (a more
+/// typical "settings/menu list" pattern) -- reads better once there are
+/// 10+ destinations, and a flat list of ListTiles is also a lighter
+/// widget tree than a grid of icon+label cells, which matters for the
+/// "low device load" goal on top of just looking better.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -62,7 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final email = supabase.auth.currentUser?.email ?? '';
+    final isAdminAccount = email.toLowerCase() == _kAdminEmail;
 
     return Scaffold(
       appBar: AppBar(
@@ -70,127 +70,146 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Sign out',
             onPressed: () => supabase.auth.signOut(),
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Signed in as $email', style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 16),
-              if (!_loadingRole && _isManagerOrAdmin)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 8),
-                  child: Text('Manager tools', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              Expanded(
-                child: _loadingRole
-                    ? const Center(child: CircularProgressIndicator())
-                    : GridView.count(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        children: [
-                          _MenuTile(
-                            icon: Icons.calendar_today,
-                            label: 'Attendance',
-                            onTap: () => _push(context, const ClockInScreen()),
-                          ),
-                          const _MenuTile(icon: Icons.sell, label: 'Pricing (not built yet)'),
-                          _MenuTile(
-                            icon: Icons.storefront,
-                            label: 'Store Visit',
-                            onTap: () => _push(context, const StoreVisitScreen()),
-                          ),
-                          const _MenuTile(
-                            icon: Icons.shelves,
-                            label: 'On Shelf Availability (via Store Visit)',
-                          ),
-                          const _MenuTile(
-                            icon: Icons.summarize,
-                            label: 'Summary Activity (not built yet)',
-                          ),
-                          _MenuTile(
-                            icon: Icons.beach_access,
-                            label: 'Leave',
-                            onTap: () => _push(context, const LeaveScreen()),
-                          ),
-                          if (_isManagerOrAdmin) ...[
-                            _MenuTile(
-                              icon: Icons.store,
-                              label: 'Manage Stores',
-                              onTap: () => _push(context, const StoreManagementScreen()),
-                            ),
-                            _MenuTile(
-                              icon: Icons.assignment_ind,
-                              label: 'Store Assignments',
-                              onTap: () => _push(context, const StoreAssignmentScreen()),
-                            ),
-                            _MenuTile(
-                              icon: Icons.fact_check,
-                              label: 'Review Leave Requests',
-                              onTap: () => _push(context, const LeaveReviewScreen()),
-                            ),
-                            _MenuTile(
-                              icon: Icons.assessment,
-                              label: 'Attendance Report',
-                              onTap: () => _push(context, const AttendanceReportScreen()),
-                            ),
-                            _MenuTile(
-                              icon: Icons.map,
-                              label: 'Store Visit Report',
-                              onTap: () => _push(context, const StoreVisitReportScreen()),
-                            ),
-                          ],
-                          if (email.toLowerCase() == _kAdminEmail)
-                            _MenuTile(
-                              icon: Icons.person_add,
-                              label: 'Add Employee',
-                              onTap: () => _push(context, const UserManagementScreen()),
-                            ),
-                        ],
+      body: _loadingRole
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: colorScheme.primaryContainer,
+                        child: Icon(Icons.person, color: colorScheme.onPrimaryContainer),
                       ),
-              ),
-            ],
-          ),
-        ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Signed in as', style: Theme.of(context).textTheme.bodySmall),
+                            Text(email, style: Theme.of(context).textTheme.titleSmall),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _SectionHeader('Your Work'),
+                _MenuRow(
+                  icon: Icons.calendar_today,
+                  label: 'Attendance',
+                  onTap: () => _push(context, const ClockInScreen()),
+                ),
+                _MenuRow(
+                  icon: Icons.storefront,
+                  label: 'Store Visit',
+                  subtitle: 'includes On Shelf Availability',
+                  onTap: () => _push(context, const StoreVisitScreen()),
+                ),
+                _MenuRow(
+                  icon: Icons.beach_access,
+                  label: 'Leave',
+                  onTap: () => _push(context, const LeaveScreen()),
+                ),
+                const _MenuRow(icon: Icons.sell, label: 'Pricing', enabled: false, subtitle: 'not built yet'),
+                const _MenuRow(icon: Icons.summarize, label: 'Summary Activity', enabled: false, subtitle: 'not built yet'),
+                if (_isManagerOrAdmin) ...[
+                  _SectionHeader('Manager Tools'),
+                  _MenuRow(
+                    icon: Icons.store,
+                    label: 'Manage Stores',
+                    onTap: () => _push(context, const StoreManagementScreen()),
+                  ),
+                  _MenuRow(
+                    icon: Icons.assignment_ind,
+                    label: 'Store Assignments',
+                    onTap: () => _push(context, const StoreAssignmentScreen()),
+                  ),
+                  _MenuRow(
+                    icon: Icons.fact_check,
+                    label: 'Review Leave Requests',
+                    onTap: () => _push(context, const LeaveReviewScreen()),
+                  ),
+                  _MenuRow(
+                    icon: Icons.assessment,
+                    label: 'Attendance Report',
+                    onTap: () => _push(context, const AttendanceReportScreen()),
+                  ),
+                  _MenuRow(
+                    icon: Icons.map,
+                    label: 'Store Visit Report',
+                    onTap: () => _push(context, const StoreVisitReportScreen()),
+                  ),
+                ],
+                if (isAdminAccount) ...[
+                  _SectionHeader('Admin'),
+                  _MenuRow(
+                    icon: Icons.person_add,
+                    label: 'Add Employee',
+                    onTap: () => _push(context, const UserManagementScreen()),
+                  ),
+                ],
+                const SizedBox(height: 16),
+              ],
+            ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+      child: Text(
+        title.toUpperCase(),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.outline,
+              letterSpacing: 0.8,
+            ),
       ),
     );
   }
 }
 
-class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, this.onTap});
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({
+    required this.icon,
+    required this.label,
+    this.subtitle,
+    this.onTap,
+    this.enabled = true,
+  });
 
   final IconData icon;
   final String label;
+  final String? subtitle;
   final VoidCallback? onTap;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 36, color: onTap == null ? Colors.grey : null),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: onTap == null ? Colors.grey : null),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDisabled = !enabled || onTap == null;
+
+    return ListTile(
+      leading: Icon(icon, color: isDisabled ? colorScheme.outline : colorScheme.primary),
+      title: Text(label, style: isDisabled ? TextStyle(color: colorScheme.outline) : null),
+      subtitle: subtitle != null ? Text(subtitle!) : null,
+      trailing: isDisabled ? null : const Icon(Icons.chevron_right),
+      onTap: isDisabled ? null : onTap,
     );
   }
 }

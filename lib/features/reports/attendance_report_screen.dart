@@ -60,7 +60,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
+                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                   if (_records.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),

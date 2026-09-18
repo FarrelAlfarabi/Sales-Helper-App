@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/photo_capture.dart';
 import '../../core/supabase_client.dart';
 
 /// On Shelf Availability: log product placement photos for a store visit
@@ -35,8 +36,7 @@ class _OsaScreenState extends State<OsaScreen> {
       _error = null;
     });
     try {
-      final picker = ImagePicker();
-      final photo = await picker.pickImage(source: ImageSource.camera);
+      final photo = await PhotoCapture.capture(source: ImageSource.camera);
       if (photo == null) return;
 
       final userId = supabase.auth.currentUser!.id;
@@ -65,30 +65,49 @@ class _OsaScreenState extends State<OsaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('On Shelf Availability')),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Log a photo for each shelf location that applies.'),
+            Text(
+              'Log a photo for each shelf location that applies.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 16),
             if (_error != null) ...[
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: TextStyle(color: colorScheme.error)),
               const SizedBox(height: 16),
             ],
             for (final entry in _placementLabels.entries)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: OutlinedButton.icon(
-                  icon: Icon(_saved[entry.key] == true ? Icons.check_circle : Icons.camera_alt),
-                  label: Text(_saving[entry.key] == true
-                      ? 'Uploading...'
-                      : (_saved[entry.key] == true ? '${entry.value} (saved)' : entry.value)),
-                  onPressed: _saving[entry.key] == true
-                      ? null
-                      : () => _logPlacement(entry.key),
+              Card(
+                elevation: 0,
+                margin: const EdgeInsets.only(bottom: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: colorScheme.outlineVariant),
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    _saved[entry.key] == true ? Icons.check_circle : Icons.camera_alt_outlined,
+                    color: _saved[entry.key] == true ? colorScheme.primary : colorScheme.outline,
+                  ),
+                  title: Text(entry.value),
+                  subtitle: _saving[entry.key] == true
+                      ? const Text('Uploading...')
+                      : (_saved[entry.key] == true ? const Text('Saved') : null),
+                  trailing: _saving[entry.key] == true
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.chevron_right),
+                  onTap: _saving[entry.key] == true ? null : () => _logPlacement(entry.key),
                 ),
               ),
             const SizedBox(height: 12),

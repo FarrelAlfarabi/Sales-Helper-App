@@ -101,7 +101,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 if (_error != null)
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedEmployeeId,
                   decoration: const InputDecoration(labelText: 'Employee'),

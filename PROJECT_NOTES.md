@@ -466,3 +466,97 @@ console). Not fixing blind a second time on this one.
 - Pricing and Summary Activity: still no spec.
 - Native platform folders, real-device verification, deployment, push
   notifications: still not possible from this environment.
+
+---
+
+## Session 5 -- 2026-09-18 (later same day)
+
+User asked for better-designed UI/UX "without heavy internet or device
+load time." Treated as two separate, concrete asks rather than one vague
+"make it nicer": reduce actual bytes moved over the network, and give the
+app a coherent visual system -- not just prettier colors.
+
+### The real fix for "heavy internet load": photo compression
+
+Every photo (selfie, store photo, OSA shot) was being captured and
+uploaded at whatever resolution the camera returned -- a modern phone
+camera easily produces 3-8MB per JPEG. For a field rep on mobile data
+submitting several of these a day, that's the actual cost driver, not
+anything about the UI.
+
+**`lib/core/photo_capture.dart`** -- a shared `PhotoCapture.capture()`
+used by all three capture screens, passing `maxWidth: 1280` and
+`imageQuality: 70` to `image_picker`'s own `pickImage()`. Verified against
+the installed `image_picker` 1.2.3 source (downloaded from pub.dev, not
+assumed) that these parameters exist and are applied natively at capture
+time, before Dart ever holds the raw bytes -- meaning the compression
+itself is free from Flutter's perspective, not an extra decode/encode
+pass that would cost CPU/battery on top. Expected effect: typical output
+in the 150-400KB range instead of several MB. **Not measured against a
+real photo on real hardware** -- the actual before/after file size is
+unverified until this runs on a phone.
+
+This is also the third screen needing "take a photo," which is the
+project's own stated threshold for extracting shared code -- so
+`clock_in_screen.dart`, `store_visit_screen.dart`, and `osa_screen.dart`
+were updated to call the shared helper instead of each instantiating
+`ImagePicker()` inline with no compression.
+
+### Design: a real theme instead of one seed color
+
+Previously `main.dart` set only `colorSchemeSeed` with no other theming --
+every screen was ad hoc default Material widgets. Added
+**`lib/core/theme.dart`**: a light and dark `ThemeData` built from
+`ColorScheme.fromSeed`, with consistent `AppBarTheme`,
+`InputDecorationTheme` (rounded fields), and button shapes. Deliberately
+used only stock Material 3 theme classes with long-stable APIs
+(`AppBarTheme`, `FilledButtonThemeData`, `OutlinedButtonThemeData`) and
+avoided newer/renamed ones like `CardThemeData` that have had breaking
+API churn in recent Flutter versions I can't verify against without the
+SDK -- card styling is done per-widget instead, to avoid guessing at a
+framework API I can't check the way I checked pub packages. No new
+dependency added, so this doesn't add anything to app size, matching the
+"low device load" half of the ask.
+
+### Design: home screen rebuilt as grouped rows, not an icon grid
+
+The original home screen was a `GridView` of icon+label tiles. With 11
+destinations now (5 field-rep + 5 manager + 1 admin), that grid was
+getting cluttered. Replaced with a grouped list (`Your Work` / `Manager
+Tools` / `Admin` sections, `ListTile` rows with a leading icon and
+chevron) -- a more standard "app menu" pattern at this item count, and
+also a simpler/flatter widget tree than a grid of stacked icon+text
+columns, which is marginally cheaper to build and re-render.
+
+Also gave Attendance, Store Visit, and On Shelf Availability screens a
+small visual pass (status card for clock-in state, card-based checklist
+for OSA placements, a proper empty state for "no stores assigned") since
+"better designed" was the explicit ask, not just performance.
+
+### Also fixed: error text now theme-aware
+
+Every screen was hardcoding `Colors.red` for validation/error messages,
+which would have looked wrong (poor contrast, inconsistent with the rest
+of the UI) once dark mode was added this session. Swapped all of these to
+`Theme.of(context).colorScheme.error`. Left the semantic green/red
+icons on the leave-approval buttons and the geofence status indicator as
+plain `Colors.green`/`Colors.red`/`Colors.orange` -- those are
+conventional universal status colors, not really a design inconsistency
+the same way ad hoc error text was.
+
+### What this pass does NOT cover (being explicit, since "better UX" is
+broad)
+
+- **No offline caching or optimistic UI.** Every screen still blocks on a
+  full network round-trip with a spinner on open. Reducing perceived load
+  time further (cached last-seen data shown instantly, background
+  refresh) is real additional work not attempted here -- this session
+  targeted bytes-over-the-wire (photos) and visual coherence, not
+  network-architecture changes.
+- **No pagination** on the reports (still capped at 200 rows) -- unrelated
+  to this session's changes, not revisited.
+- **Still entirely unverified on a device or in a browser** -- same
+  caveat as every session: no Flutter SDK in this environment, nothing
+  here has been compiled, let alone visually reviewed. The design
+  decisions above are reasoned from Material 3 conventions and the
+  verified package APIs, not from having seen the screens render.

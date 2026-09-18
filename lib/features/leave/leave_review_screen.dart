@@ -69,7 +69,7 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
+                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                   if (_pending.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),

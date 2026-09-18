@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/photo_capture.dart';
 import '../../core/supabase_client.dart';
 
 /// Clock in / clock out. Per the reference deck this is selfie + location
@@ -84,9 +85,11 @@ class _ClockInScreenState extends State<ClockInScreen> {
     );
   }
 
-  Future<XFile?> _captureSelfie() async {
-    final picker = ImagePicker();
-    return picker.pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
+  Future<XFile?> _captureSelfie() {
+    return PhotoCapture.capture(
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.front,
+    );
   }
 
   Future<String> _uploadSelfie(XFile file, String userId) async {
@@ -163,40 +166,70 @@ class _ClockInScreenState extends State<ClockInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isClockedIn = _openRecord != null;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Attendance')),
-      body: Center(
-        child: _loading
-            ? const CircularProgressIndicator()
-            : Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _openRecord == null
-                          ? 'You are not clocked in.'
-                          : 'Clocked in at ${_openRecord!['clock_in_at']}',
-                      textAlign: TextAlign.center,
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: colorScheme.outlineVariant),
                     ),
-                    const SizedBox(height: 24),
-                    if (_error != null) ...[
-                      Text(_error!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
-                    ],
-                    FilledButton.icon(
-                      icon: Icon(_openRecord == null ? Icons.login : Icons.logout),
+                    color: isClockedIn
+                        ? colorScheme.primaryContainer.withAlpha(120)
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Icon(
+                            isClockedIn ? Icons.check_circle : Icons.schedule,
+                            size: 40,
+                            color: isClockedIn ? colorScheme.primary : colorScheme.outline,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            isClockedIn ? 'Clocked in' : 'Not clocked in',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          if (isClockedIn) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'since ${_openRecord!['clock_in_at']}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null) ...[
+                    Text(_error!, style: TextStyle(color: colorScheme.error)),
+                    const SizedBox(height: 16),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      icon: Icon(isClockedIn ? Icons.logout : Icons.login),
                       label: Text(_submitting
                           ? 'Submitting...'
-                          : (_openRecord == null ? 'Clock In' : 'Clock Out')),
-                      onPressed: _submitting
-                          ? null
-                          : (_openRecord == null ? _clockIn : _clockOut),
+                          : (isClockedIn ? 'Clock Out' : 'Clock In')),
+                      onPressed: _submitting ? null : (isClockedIn ? _clockOut : _clockIn),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-      ),
+            ),
     );
   }
 }

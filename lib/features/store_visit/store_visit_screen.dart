@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/photo_capture.dart';
 import '../../core/supabase_client.dart';
 import '../osa/osa_screen.dart';
 
@@ -90,8 +91,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
-      final picker = ImagePicker();
-      final photo = await picker.pickImage(source: ImageSource.camera);
+      final photo = await PhotoCapture.capture(source: ImageSource.camera);
       if (photo == null) throw Exception('A store photo is required.');
 
       final userId = supabase.auth.currentUser!.id;
@@ -148,37 +148,62 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
       appBar: AppBar(title: const Text('Store Visit')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_assignedStores.isEmpty)
-                    const Text('No stores are assigned to you yet.')
-                  else
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedStoreId,
-                      decoration: const InputDecoration(labelText: 'Store'),
-                      items: _assignedStores
-                          .map((s) => DropdownMenuItem(
-                                value: s['id'] as String,
-                                child: Text('${s['name']} (${s['code']})'),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setState(() => _selectedStoreId = v),
-                    ),
-                  const SizedBox(height: 24),
-                  if (_error != null) ...[
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
-                    const SizedBox(height: 16),
-                  ],
-                  FilledButton(
-                    onPressed: _submitting ? null : _submitVisit,
-                    child: Text(_submitting ? 'Submitting...' : 'Send Visit'),
+          : _assignedStores.isEmpty
+              ? _EmptyState(onRetry: _loadAssignedStores)
+              : Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedStoreId,
+                        decoration: const InputDecoration(labelText: 'Store'),
+                        items: _assignedStores
+                            .map((s) => DropdownMenuItem(
+                                  value: s['id'] as String,
+                                  child: Text('${s['name']} (${s['code']})'),
+                                ))
+                            .toList(),
+                        onChanged: (v) => setState(() => _selectedStoreId = v),
+                      ),
+                      const SizedBox(height: 20),
+                      if (_error != null) ...[
+                        Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                        const SizedBox(height: 16),
+                      ],
+                      FilledButton.icon(
+                        icon: const Icon(Icons.camera_alt),
+                        label: Text(_submitting ? 'Submitting...' : 'Send Visit'),
+                        onPressed: _submitting ? null : _submitVisit,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.storefront_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+            const SizedBox(height: 16),
+            const Text('No stores are assigned to you yet.', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            OutlinedButton(onPressed: onRetry, child: const Text('Refresh')),
+          ],
+        ),
+      ),
     );
   }
 }

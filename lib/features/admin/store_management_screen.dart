@@ -70,7 +70,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
+                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                   for (final s in _stores)
                     Card(
                       child: ListTile(
@@ -204,7 +204,7 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
             const SizedBox(height: 16),
             FilledButton(
