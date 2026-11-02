@@ -21,9 +21,9 @@ class OsaScreen extends StatefulWidget {
 
 class _OsaScreenState extends State<OsaScreen> {
   static const _placementLabels = {
-    'main_shelf': 'Homeshelf',
-    'checkout_display': 'COC Cashier',
-    'secondary_display': 'Secondary Display',
+    'main_shelf': 'Rak Utama',
+    'checkout_display': 'Display Kasir',
+    'secondary_display': 'Display Tambahan',
   };
 
   final Map<String, bool> _saving = {};
@@ -68,14 +68,14 @@ class _OsaScreenState extends State<OsaScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('On Shelf Availability')),
+      appBar: AppBar(title: const Text('Ketersediaan di Rak')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Log a photo for each shelf location that applies.',
+              'Foto setiap lokasi rak yang sesuai.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -98,8 +98,8 @@ class _OsaScreenState extends State<OsaScreen> {
                   ),
                   title: Text(entry.value),
                   subtitle: _saving[entry.key] == true
-                      ? const Text('Uploading...')
-                      : (_saved[entry.key] == true ? const Text('Saved') : null),
+                      ? const Text('Mengunggah...')
+                      : (_saved[entry.key] == true ? const Text('Tersimpan') : null),
                   trailing: _saving[entry.key] == true
                       ? const SizedBox(
                           height: 20,
@@ -113,7 +113,7 @@ class _OsaScreenState extends State<OsaScreen> {
             const SizedBox(height: 12),
             FilledButton(
               onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
-              child: const Text('Done'),
+              child: const Text('Selesai'),
             ),
           ],
         ),

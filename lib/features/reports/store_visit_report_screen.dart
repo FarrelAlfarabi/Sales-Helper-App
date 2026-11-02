@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:latlong2/latlong.dart';
+
+import '../../core/signed_photo.dart';
 import '../../core/supabase_client.dart';
+import '../../core/zone_map.dart';
 
 /// Manager/admin: store visit history across all employees, with the
 /// server-computed geofence flag surfaced directly -- this is the report
@@ -38,13 +42,14 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
           .from('store_visits')
           .select(
             'id, visit_started_at, distance_from_store_meters, is_within_geofence, '
-            'profiles(full_name), stores(name, code)',
+            'check_in_latitude, check_in_longitude, store_photo_url, '
+            'profiles(full_name), stores(name, code, latitude, longitude, geofence_radius_meters)',
           )
           .order('visit_started_at', ascending: false)
           .limit(200);
       setState(() => _visits = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Failed to load store visits: $e');
+      setState(() => _error = 'Gagal memuat kunjungan toko: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -53,7 +58,7 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Store Visit Report')),
+      appBar: AppBar(title: const Text('Laporan Kunjungan Toko')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -66,7 +71,7 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
                   if (_visits.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
-                      child: Center(child: Text('No store visits yet.')),
+                      child: Center(child: Text('Belum ada kunjungan toko.')),
                     ),
                   for (final v in _visits)
                     Card(
@@ -81,15 +86,58 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
                         ),
                         subtitle: Text(
                           '${v['visit_started_at']}\n'
-                          'Distance: ${(v['distance_from_store_meters'] as num?)?.toStringAsFixed(0) ?? '?'}m '
+                          'Jarak: ${(v['distance_from_store_meters'] as num?)?.toStringAsFixed(0) ?? '?'}m '
                           '(${v['is_within_geofence'] == true ? 'inside zone' : 'OUTSIDE zone'})',
                         ),
                         isThreeLine: true,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => VisitDetailScreen(visit: v)),
+                        ),
                       ),
                     ),
                 ],
               ),
             ),
+    );
+  }
+}
+
+/// Visit detail: store photo plus the check-in point against the store's
+/// zone circle, like ViewLT's "Zonasi Toko" view.
+class VisitDetailScreen extends StatelessWidget {
+  const VisitDetailScreen({super.key, required this.visit});
+  final Map<String, dynamic> visit;
+
+  @override
+  Widget build(BuildContext context) {
+    final store = (visit['stores'] as Map?) ?? const {};
+    final inside = visit['is_within_geofence'] == true;
+    final point = LatLng((visit['check_in_latitude'] as num).toDouble(), (visit['check_in_longitude'] as num).toDouble());
+    final center = (store['latitude'] != null && store['longitude'] != null)
+        ? LatLng((store['latitude'] as num).toDouble(), (store['longitude'] as num).toDouble())
+        : null;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Zonasi Toko')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text('${store['name'] ?? '?'} (${store['code'] ?? ''})', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Chip(
+            avatar: Icon(inside ? Icons.check_circle : Icons.warning, color: inside ? Colors.green : Colors.orange),
+            label: Text(inside ? 'Dalam Zona' : 'Luar Zona'),
+          ),
+          const SizedBox(height: 12),
+          ZoneMap(
+            point: point,
+            zoneCenter: center,
+            zoneRadiusMeters: (store['geofence_radius_meters'] as num?)?.toDouble(),
+            height: 280,
+          ),
+          const SizedBox(height: 16),
+          SignedPhoto(bucket: 'store-visit-photos', path: visit['store_photo_url'] as String?),
+        ],
+      ),
     );
   }
 }

@@ -56,7 +56,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
             .toList();
       });
     } catch (e) {
-      setState(() => _error = 'Failed to load assigned stores: $e');
+      setState(() => _error = 'Gagal memuat toko tugas: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -64,7 +64,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
 
   Future<void> _submitVisit() async {
     if (_selectedStoreId == null) {
-      setState(() => _error = 'Select a store first.');
+      setState(() => _error = 'Pilih toko dulu.');
       return;
     }
 
@@ -76,7 +76,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw Exception('Location services are off. Turn on GPS to check in.');
+        throw Exception('Layanan lokasi mati. Aktifkan GPS untuk check-in.');
       }
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -84,7 +84,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        throw Exception('Location permission is required to visit a store.');
+        throw Exception('Izin lokasi diperlukan untuk kunjungan toko.');
       }
 
       final position = await Geolocator.getCurrentPosition(
@@ -92,7 +92,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
       );
 
       final photo = await PhotoCapture.capture(source: ImageSource.camera);
-      if (photo == null) throw Exception('A store photo is required.');
+      if (photo == null) throw Exception('Foto toko wajib diisi.');
 
       final userId = supabase.auth.currentUser!.id;
       final bytes = await photo.readAsBytes();
@@ -126,8 +126,8 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
 
       if (isWithinGeofence == false) {
         setState(() => _error =
-            'Visit recorded, but you were ${distance?.toStringAsFixed(0)}m from the store '
-            '-- outside its geofence. This will show as flagged in reports.');
+            'Kunjungan tercatat, tetapi kamu berada ${distance?.toStringAsFixed(0)}m dari toko '
+            '-- di luar geofence. Ini akan ditandai di laporan.');
       }
 
       Navigator.of(context).push(
@@ -145,7 +145,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Store Visit')),
+      appBar: AppBar(title: const Text('Kunjungan Toko')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _assignedStores.isEmpty
@@ -157,7 +157,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                     children: [
                       DropdownButtonFormField<String>(
                         initialValue: _selectedStoreId,
-                        decoration: const InputDecoration(labelText: 'Store'),
+                        decoration: const InputDecoration(labelText: 'Toko'),
                         items: _assignedStores
                             .map((s) => DropdownMenuItem(
                                   value: s['id'] as String,
@@ -173,7 +173,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                       ],
                       FilledButton.icon(
                         icon: const Icon(Icons.camera_alt),
-                        label: Text(_submitting ? 'Submitting...' : 'Send Visit'),
+                        label: Text(_submitting ? 'Mengirim...' : 'Kirim Kunjungan'),
                         onPressed: _submitting ? null : _submitVisit,
                       ),
                     ],
@@ -198,9 +198,9 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(Icons.storefront_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 16),
-            const Text('No stores are assigned to you yet.', textAlign: TextAlign.center),
+            const Text('Belum ada toko yang ditugaskan kepadamu.', textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRetry, child: const Text('Refresh')),
+            OutlinedButton(onPressed: onRetry, child: const Text('Muat ulang')),
           ],
         ),
       ),

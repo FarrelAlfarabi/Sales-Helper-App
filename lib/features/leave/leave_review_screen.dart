@@ -38,7 +38,7 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
           .order('start_date');
       setState(() => _pending = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Failed to load pending requests: $e');
+      setState(() => _error = 'Gagal memuat pengajuan: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -60,7 +60,7 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Leave Requests')),
+      appBar: AppBar(title: const Text('Pengajuan Cuti')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -73,13 +73,13 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
                   if (_pending.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
-                      child: Center(child: Text('No pending requests.')),
+                      child: Center(child: Text('Tidak ada pengajuan tertunda.')),
                     ),
                   for (final r in _pending)
                     Card(
                       child: ListTile(
                         title: Text(
-                          '${(r['profiles'] as Map?)?['full_name'] ?? 'Unknown'} -- ${r['leave_type']}',
+                          '${(r['profiles'] as Map?)?['full_name'] ?? 'Tidak diketahui'} -- ${r['leave_type']}',
                         ),
                         subtitle: Text(
                           '${r['start_date']} to ${r['end_date']}'

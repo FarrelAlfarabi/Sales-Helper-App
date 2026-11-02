@@ -57,7 +57,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
         _openRecord = rows.isEmpty ? null : rows.first as Map<String, dynamic>;
       });
     } catch (e) {
-      setState(() => _error = 'Failed to load attendance status: $e');
+      setState(() => _error = 'Gagal memuat status absensi: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -68,7 +68,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
   Future<Position> _requireCurrentPosition() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      throw Exception('Location services are off. Turn on GPS to clock in.');
+      throw Exception('Layanan lokasi mati. Aktifkan GPS untuk absen masuk.');
     }
 
     var permission = await Geolocator.checkPermission();
@@ -77,7 +77,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
     }
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      throw Exception('Location permission is required to clock in.');
+      throw Exception('Izin lokasi diperlukan untuk absen masuk.');
     }
 
     return Geolocator.getCurrentPosition(
@@ -113,7 +113,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
     try {
       final position = await _requireCurrentPosition();
       final selfie = await _captureSelfie();
-      if (selfie == null) throw Exception('Selfie is required to clock in.');
+      if (selfie == null) throw Exception('Foto selfie wajib untuk absen masuk.');
 
       final userId = supabase.auth.currentUser!.id;
       final selfiePath = await _uploadSelfie(selfie, userId);
@@ -143,7 +143,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
     try {
       final position = await _requireCurrentPosition();
       final selfie = await _captureSelfie();
-      if (selfie == null) throw Exception('Selfie is required to clock out.');
+      if (selfie == null) throw Exception('Foto selfie wajib untuk absen pulang.');
 
       final userId = supabase.auth.currentUser!.id;
       final selfiePath = await _uploadSelfie(selfie, userId);
@@ -170,7 +170,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
     final isClockedIn = _openRecord != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Attendance')),
+      appBar: AppBar(title: const Text('Absensi')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -197,13 +197,13 @@ class _ClockInScreenState extends State<ClockInScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            isClockedIn ? 'Clocked in' : 'Not clocked in',
+                            isClockedIn ? 'Sudah absen masuk' : 'Belum absen masuk',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           if (isClockedIn) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'since ${_openRecord!['clock_in_at']}',
+                              'sejak ${_openRecord!['clock_in_at']}',
                               style: Theme.of(context).textTheme.bodySmall,
                               textAlign: TextAlign.center,
                             ),
@@ -222,8 +222,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
                     child: FilledButton.icon(
                       icon: Icon(isClockedIn ? Icons.logout : Icons.login),
                       label: Text(_submitting
-                          ? 'Submitting...'
-                          : (isClockedIn ? 'Clock Out' : 'Clock In')),
+                          ? 'Mengirim...'
+                          : (isClockedIn ? 'Absen Pulang' : 'Absen Masuk')),
                       onPressed: _submitting ? null : (isClockedIn ? _clockOut : _clockIn),
                     ),
                   ),

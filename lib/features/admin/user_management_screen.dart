@@ -74,7 +74,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     } on FunctionException catch (e) {
       final details = e.details;
       final message = details is Map ? details['error'] : e.reasonPhrase;
-      setState(() => _error = message?.toString() ?? 'Request failed (${e.status}).');
+      setState(() => _error = message?.toString() ?? 'Permintaan gagal (${e.status}).');
     } catch (e) {
       setState(() => _error = '$e');
     } finally {
@@ -85,7 +85,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Employee')),
+      appBar: AppBar(title: const Text('Tambah Karyawan')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -94,32 +94,32 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             children: [
               TextFormField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(labelText: 'Full name'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: const InputDecoration(labelText: 'Nama lengkap'),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Temporary password',
-                  helperText: 'At least 8 characters. Share this with the employee directly.',
+                  labelText: 'Kata sandi sementara',
+                  helperText: 'Minimal 8 karakter. Berikan langsung kepada karyawan.',
                 ),
                 validator: (v) =>
-                    (v == null || v.length < 8) ? 'At least 8 characters' : null,
+                    (v == null || v.length < 8) ? 'Minimal 8 karakter' : null,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _role,
-                decoration: const InputDecoration(labelText: 'Role'),
+                decoration: const InputDecoration(labelText: 'Peran'),
                 items: const [
-                  DropdownMenuItem(value: 'field_rep', child: Text('Field Rep')),
-                  DropdownMenuItem(value: 'manager', child: Text('Manager')),
+                  DropdownMenuItem(value: 'field_rep', child: Text('Sales Lapangan')),
+                  DropdownMenuItem(value: 'manager', child: Text('Manajer')),
                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
                 ],
                 onChanged: (v) => setState(() => _role = v!),
@@ -135,7 +135,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _submitting ? null : _submit,
-                child: Text(_submitting ? 'Creating...' : 'Create Account'),
+                child: Text(_submitting ? 'Membuat...' : 'Buat Akun'),
               ),
             ],
           ),

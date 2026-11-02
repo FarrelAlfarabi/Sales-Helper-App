@@ -7,11 +7,16 @@ import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
+import '../insights/insights_screen.dart';
+import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
+import '../sales/sales_entry_screen.dart';
+import '../shelf_check/shelf_check_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
+import '../summary/summary_screen.dart';
 
-// Gates the "Add Employee" tile specifically to this one account, per an
+// Gates the "Tambah Karyawan" tile specifically to this one account, per an
 // explicit request that it be reachable only from this login -- not any
 // account that happens to have role='admin'. This is a UI convenience
 // only: the admin-create-user Edge Function independently re-checks this
@@ -34,6 +39,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isManagerOrAdmin = false;
   bool _loadingRole = true;
+  String? _fullName;
 
   @override
   void initState() {
@@ -44,8 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadRole() async {
     try {
       final userId = supabase.auth.currentUser!.id;
-      final row = await supabase.from('profiles').select('role').eq('id', userId).single();
-      setState(() => _isManagerOrAdmin = row['role'] == 'manager' || row['role'] == 'admin');
+      final row = await supabase.from('profiles').select('role, full_name').eq('id', userId).single();
+      setState(() {
+        _isManagerOrAdmin = row['role'] == 'manager' || row['role'] == 'admin';
+        _fullName = row['full_name'] as String?;
+      });
     } catch (_) {
       // Role check failing just hides manager tiles -- RLS is still the
       // real access control on every underlying table/screen regardless.
@@ -70,14 +79,18 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Sign out',
+            tooltip: 'Keluar',
             onPressed: () => supabase.auth.signOut(),
           ),
         ],
       ),
       body: _loadingRole
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
+          : Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 Padding(
@@ -94,58 +107,92 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Signed in as', style: Theme.of(context).textTheme.bodySmall),
-                            Text(email, style: Theme.of(context).textTheme.titleSmall),
+                            Text('Halo,', style: Theme.of(context).textTheme.bodySmall),
+                            Text(
+                              (_fullName != null && _fullName!.isNotEmpty) ? _fullName! : email,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                _SectionHeader('Your Work'),
+                _SectionHeader('Pekerjaanmu'),
                 _MenuRow(
                   icon: Icons.calendar_today,
-                  label: 'Attendance',
+                  label: 'Absensi',
                   onTap: () => _push(context, const ClockInScreen()),
                 ),
                 _MenuRow(
                   icon: Icons.storefront,
-                  label: 'Store Visit',
-                  subtitle: 'includes On Shelf Availability',
+                  label: 'Kunjungan Toko',
+                  subtitle: 'termasuk Ketersediaan di Rak',
                   onTap: () => _push(context, const StoreVisitScreen()),
                 ),
                 _MenuRow(
+                  icon: Icons.photo_camera_back_outlined,
+                  label: 'Cek Rak',
+                  subtitle: 'foto lorong rak, dapat peringatan restok',
+                  onTap: () => _push(context, const ShelfCheckScreen()),
+                ),
+                _MenuRow(
+                  icon: Icons.point_of_sale,
+                  label: 'Input Penjualan',
+                  onTap: () => _push(context, const SalesEntryScreen()),
+                ),
+                _MenuRow(
                   icon: Icons.beach_access,
-                  label: 'Leave',
+                  label: 'Cuti',
                   onTap: () => _push(context, const LeaveScreen()),
                 ),
-                const _MenuRow(icon: Icons.sell, label: 'Pricing', enabled: false, subtitle: 'not built yet'),
-                const _MenuRow(icon: Icons.summarize, label: 'Summary Activity', enabled: false, subtitle: 'not built yet'),
+                _MenuRow(
+                  icon: Icons.sell,
+                  label: 'Harga',
+                  onTap: () => _push(context, const PricingScreen()),
+                ),
+                _MenuRow(
+                  icon: Icons.assignment_ind_outlined,
+                  label: 'Laporan Kehadiran',
+                  subtitle: 'riwayat absensimu',
+                  onTap: () => _push(context, const AttendanceReportScreen(mine: true)),
+                ),
+                _MenuRow(
+                  icon: Icons.summarize,
+                  label: 'Ringkasan Aktivitas',
+                  onTap: () => _push(context, const SummaryScreen()),
+                ),
                 if (_isManagerOrAdmin) ...[
-                  _SectionHeader('Manager Tools'),
+                  _SectionHeader('Alat Manajer'),
+                  _MenuRow(
+                    icon: Icons.auto_awesome,
+                    label: 'Wawasan AI',
+                    subtitle: 'ringkasan penjualan, stok, dan harga',
+                    onTap: () => _push(context, const InsightsScreen()),
+                  ),
                   _MenuRow(
                     icon: Icons.store,
-                    label: 'Manage Stores',
+                    label: 'Kelola Toko',
                     onTap: () => _push(context, const StoreManagementScreen()),
                   ),
                   _MenuRow(
                     icon: Icons.assignment_ind,
-                    label: 'Store Assignments',
+                    label: 'Penugasan Toko',
                     onTap: () => _push(context, const StoreAssignmentScreen()),
                   ),
                   _MenuRow(
                     icon: Icons.fact_check,
-                    label: 'Review Leave Requests',
+                    label: 'Tinjau Pengajuan Cuti',
                     onTap: () => _push(context, const LeaveReviewScreen()),
                   ),
                   _MenuRow(
                     icon: Icons.assessment,
-                    label: 'Attendance Report',
+                    label: 'Laporan Absensi',
                     onTap: () => _push(context, const AttendanceReportScreen()),
                   ),
                   _MenuRow(
                     icon: Icons.map,
-                    label: 'Store Visit Report',
+                    label: 'Laporan Kunjungan Toko',
                     onTap: () => _push(context, const StoreVisitReportScreen()),
                   ),
                 ],
@@ -153,13 +200,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   _SectionHeader('Admin'),
                   _MenuRow(
                     icon: Icons.person_add,
-                    label: 'Add Employee',
+                    label: 'Tambah Karyawan',
                     onTap: () => _push(context, const UserManagementScreen()),
                   ),
                 ],
                 const SizedBox(height: 16),
               ],
             ),
+          ),
+        ),
     );
   }
 }

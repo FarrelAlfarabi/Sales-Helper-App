@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/supabase_client.dart' as core;
@@ -8,6 +10,8 @@ import 'features/home/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Intl.defaultLocale = 'id_ID';
+  await initializeDateFormatting('id_ID');
   // Supabase init used to be awaited here, before runApp() -- meaning
   // nothing painted at all (a blank white tab, no spinner, no error) until
   // it finished. If that call is slow or silently stuck (blocked network,
@@ -48,9 +52,9 @@ class _BootGateState extends State<BootGate> {
   late final Future<void> _init = core.initSupabase().timeout(
         const Duration(seconds: 15),
         onTimeout: () => throw Exception(
-          'Timed out connecting to Supabase after 15s. Check your network '
-          'connection and that --dart-define=SUPABASE_URL and '
-          '--dart-define=SUPABASE_ANON_KEY were passed correctly.',
+          'Koneksi ke Supabase habis waktu setelah 15 detik. Periksa jaringan '
+          'dan pastikan --dart-define=SUPABASE_URL dan '
+          '--dart-define=SUPABASE_ANON_KEY sudah diberikan dengan benar.',
         ),
       );
 
@@ -68,7 +72,7 @@ class _BootGateState extends State<BootGate> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Failed to start Zonein:\n${snapshot.error}',
+                  'Gagal memulai Zonein:\n${snapshot.error}',
                   textAlign: TextAlign.center,
                 ),
               ),

@@ -52,7 +52,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
         _assignments = List<Map<String, dynamic>>.from(assignments);
       });
     } catch (e) {
-      setState(() => _error = 'Failed to load: $e');
+      setState(() => _error = 'Gagal memuat: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -60,7 +60,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
 
   Future<void> _assign() async {
     if (_selectedEmployeeId == null || _selectedStoreId == null) {
-      setState(() => _error = 'Pick both an employee and a store.');
+      setState(() => _error = 'Pilih karyawan dan toko.');
       return;
     }
     setState(() {
@@ -94,7 +94,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Store Assignments')),
+      appBar: AppBar(title: const Text('Penugasan Toko')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -104,7 +104,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
                   Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedEmployeeId,
-                  decoration: const InputDecoration(labelText: 'Employee'),
+                  decoration: const InputDecoration(labelText: 'Karyawan'),
                   items: _employees
                       .map((e) => DropdownMenuItem(
                             value: e['id'] as String,
@@ -116,7 +116,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedStoreId,
-                  decoration: const InputDecoration(labelText: 'Store'),
+                  decoration: const InputDecoration(labelText: 'Toko'),
                   items: _stores
                       .map((s) => DropdownMenuItem(
                             value: s['id'] as String,
@@ -128,10 +128,10 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _submitting ? null : _assign,
-                  child: Text(_submitting ? 'Assigning...' : 'Assign'),
+                  child: Text(_submitting ? 'Menugaskan...' : 'Tugaskan'),
                 ),
                 const Divider(height: 32),
-                const Text('Current assignments', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Penugasan saat ini', style: TextStyle(fontWeight: FontWeight.bold)),
                 for (final a in _assignments)
                   ListTile(
                     title: Text('${(a['profiles'] as Map?)?['full_name'] ?? '?'} '

@@ -38,7 +38,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       final rows = await supabase.from('stores').select().order('name');
       setState(() => _stores = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Failed to load stores: $e');
+      setState(() => _error = 'Gagal memuat toko: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -56,11 +56,11 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Stores')),
+      appBar: AppBar(title: const Text('Toko')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddStoreForm,
         icon: const Icon(Icons.add),
-        label: const Text('Add Store'),
+        label: const Text('Tambah Toko'),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -159,48 +159,48 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('New Store', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Toko Baru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextFormField(
               controller: _codeController,
-              decoration: const InputDecoration(labelText: 'Store code'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Kode toko'),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
             ),
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Store name'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Nama toko'),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
             ),
             TextFormField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address (optional)'),
+              decoration: const InputDecoration(labelText: 'Alamat (opsional)'),
             ),
             Row(
               children: [
                 Expanded(
                   child: TextFormField(
                     controller: _latController,
-                    decoration: const InputDecoration(labelText: 'Latitude'),
+                    decoration: const InputDecoration(labelText: 'Lintang'),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                    validator: (v) => double.tryParse(v ?? '') == null ? 'Invalid' : null,
+                    validator: (v) => double.tryParse(v ?? '') == null ? 'Tidak valid' : null,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextFormField(
                     controller: _lngController,
-                    decoration: const InputDecoration(labelText: 'Longitude'),
+                    decoration: const InputDecoration(labelText: 'Bujur'),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                    validator: (v) => double.tryParse(v ?? '') == null ? 'Invalid' : null,
+                    validator: (v) => double.tryParse(v ?? '') == null ? 'Tidak valid' : null,
                   ),
                 ),
               ],
             ),
             TextFormField(
               controller: _radiusController,
-              decoration: const InputDecoration(labelText: 'Geofence radius (meters)'),
+              decoration: const InputDecoration(labelText: 'Radius geofence (meter)'),
               keyboardType: TextInputType.number,
-              validator: (v) => int.tryParse(v ?? '') == null ? 'Invalid' : null,
+              validator: (v) => int.tryParse(v ?? '') == null ? 'Tidak valid' : null,
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
@@ -209,7 +209,7 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _submitting ? null : _submit,
-              child: Text(_submitting ? 'Saving...' : 'Save'),
+              child: Text(_submitting ? 'Menyimpan...' : 'Simpan'),
             ),
           ],
         ),

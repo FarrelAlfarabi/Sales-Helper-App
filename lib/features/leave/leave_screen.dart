@@ -16,11 +16,12 @@ class LeaveScreen extends StatefulWidget {
 }
 
 class _LeaveScreenState extends State<LeaveScreen> {
+  static const _statusId = {'pending': 'menunggu', 'approved': 'disetujui', 'rejected': 'ditolak'};
   static const _typeLabels = {
-    'sick': 'Sick Leave',
-    'permit': 'Permit',
-    'off_day': 'Off Day',
-    'leave': 'Leave',
+    'sick': 'Sakit',
+    'permit': 'Izin',
+    'off_day': 'Hari Libur',
+    'leave': 'Cuti',
   };
 
   List<Map<String, dynamic>> _requests = [];
@@ -47,7 +48,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
           .order('start_date', ascending: false);
       setState(() => _requests = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Failed to load leave requests: $e');
+      setState(() => _error = 'Gagal memuat pengajuan cuti: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -74,11 +75,11 @@ class _LeaveScreenState extends State<LeaveScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Leave')),
+      appBar: AppBar(title: const Text('Cuti')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openRequestForm,
         icon: const Icon(Icons.add),
-        label: const Text('Request'),
+        label: const Text('Ajukan'),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -92,7 +93,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                   if (_requests.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
-                      child: Center(child: Text('No leave requests yet.')),
+                      child: Center(child: Text('Belum ada pengajuan cuti.')),
                     ),
                   for (final r in _requests)
                     Card(
@@ -102,7 +103,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                           '${r['start_date']} to ${r['end_date']}',
                         ),
                         subtitle: Text(
-                          'Status: ${r['status']}'
+                          'Status: ${_statusId[r['status']] ?? r['status']}'
                           '${r['reason'] != null ? '\n${r['reason']}' : ''}',
                         ),
                         isThreeLine: r['reason'] != null,
@@ -156,11 +157,11 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
 
   Future<void> _submit() async {
     if (_start == null || _end == null) {
-      setState(() => _error = 'Pick a start and end date.');
+      setState(() => _error = 'Pilih tanggal mulai dan selesai.');
       return;
     }
     if (_end!.isBefore(_start!)) {
-      setState(() => _error = 'End date must be on or after the start date.');
+      setState(() => _error = 'Tanggal selesai tidak boleh sebelum tanggal mulai.');
       return;
     }
 
@@ -202,35 +203,35 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('New Leave Request', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Pengajuan Cuti Baru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _type,
-            decoration: const InputDecoration(labelText: 'Type'),
+            decoration: const InputDecoration(labelText: 'Jenis'),
             items: const [
-              DropdownMenuItem(value: 'sick', child: Text('Sick Leave')),
-              DropdownMenuItem(value: 'permit', child: Text('Permit')),
-              DropdownMenuItem(value: 'off_day', child: Text('Off Day')),
-              DropdownMenuItem(value: 'leave', child: Text('Leave')),
+              DropdownMenuItem(value: 'sick', child: Text('Sakit')),
+              DropdownMenuItem(value: 'permit', child: Text('Izin')),
+              DropdownMenuItem(value: 'off_day', child: Text('Hari Libur')),
+              DropdownMenuItem(value: 'leave', child: Text('Cuti')),
             ],
             onChanged: (v) => setState(() => _type = v!),
           ),
           const SizedBox(height: 12),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(_start == null ? 'Start date' : _start.toString().split(' ').first),
+            title: Text(_start == null ? 'Tanggal mulai' : _start.toString().split(' ').first),
             trailing: const Icon(Icons.calendar_today),
             onTap: () => _pickDate(isStart: true),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(_end == null ? 'End date' : _end.toString().split(' ').first),
+            title: Text(_end == null ? 'Tanggal selesai' : _end.toString().split(' ').first),
             trailing: const Icon(Icons.calendar_today),
             onTap: () => _pickDate(isStart: false),
           ),
           TextField(
             controller: _reasonController,
-            decoration: const InputDecoration(labelText: 'Reason (optional)'),
+            decoration: const InputDecoration(labelText: 'Alasan (opsional)'),
             maxLines: 2,
           ),
           if (_error != null) ...[
@@ -240,7 +241,7 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _submitting ? null : _submit,
-            child: Text(_submitting ? 'Submitting...' : 'Submit'),
+            child: Text(_submitting ? 'Mengirim...' : 'Kirim'),
           ),
         ],
       ),

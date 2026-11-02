@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  bool _obscure = true;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -47,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
     } catch (e) {
-      setState(() => _errorMessage = 'Sign in failed: $e');
+      setState(() => _errorMessage = 'Gagal masuk: $e');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -73,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Let's start your activity today",
+                    "Mulai aktivitasmu hari ini",
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
@@ -82,15 +83,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(labelText: 'Email'),
                     validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Email is required' : null,
+                        (v == null || v.trim().isEmpty) ? 'Email wajib diisi' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: _obscure,
+                    decoration: InputDecoration(
+                      labelText: 'Kata sandi',
+                      suffixIcon: IconButton(
+                        tooltip: _obscure ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi',
+                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
                     validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Password is required' : null,
+                        (v == null || v.isEmpty) ? 'Kata sandi wajib diisi' : null,
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),
@@ -105,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Sign In'),
+                        : const Text('Masuk'),
                   ),
                 ],
               ),
