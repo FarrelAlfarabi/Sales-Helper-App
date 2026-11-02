@@ -11,7 +11,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { askClaude, json, MODEL, parseJson } from "../_shared/claude.ts";
+import { askClaude, json, MODEL, parseJson, type Usage } from "../_shared/claude.ts";
 
 const SYSTEM = `You review one photo of a retail shelf (FMCG: food, drinks, household, personal care) for a field sales rep in Indonesia.
 LANGUAGE: write every free-text value (summary, notes, descriptions, analysis, key actions, limits, gap and issue text) in Bahasa Indonesia, simple and direct. Keep JSON keys and the fixed values ("ok"/"low"/"out", "high"/"medium"/"low", "now"/"this_visit"/"next_visit", "rep"/"manager", "top"/"eye"/"middle"/"bottom"/"unknown") exactly as written in English.
@@ -73,10 +73,13 @@ Deno.serve(async (req: Request) => {
     if (de || !file) return json({ error: `Could not read photo: ${de?.message ?? "not found"}` }, 400);
 
     const { data: store } = await sb.from("stores").select("name").eq("id", body.store_id).single();
+    const usage: Usage = { input_tokens: 0, output_tokens: 0, cost_usd: 0 };
     const reply = await askClaude([
       { type: "image", source: { type: "base64", media_type: "image/jpeg", data: toBase64(await file.arrayBuffer()) } },
       { type: "text", text: `Store: ${store?.name ?? "unknown"}. Focus brands: ${(body.focus_brands ?? "").trim().slice(0, 200) || "none given"}. Analyze this shelf photo.` },
-    ], SYSTEM, 4000);
+    ], SYSTEM, 4000, usage);
+    // Best effort: a failed usage log must not lose the result.
+    await sb.from("ai_usage").insert({ fn: "shelf-check", model: MODEL, ...usage });
     const analysis = parseJson(reply);
 
     const { data: row, error: ie } = await sb.from("shelf_checks").insert({
