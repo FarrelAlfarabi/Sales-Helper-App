@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="zonein">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>zonein</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <div id="boot" style="font-family:system-ui,sans-serif;text-align:center;padding:48px 16px;color:#52635b">Memuat Zonein...</div>
+  <script>
+    // Visible diagnostics: a bare white screen tells nobody anything.
+    function bootFail(m){var b=document.getElementById('boot');if(b){b.style.color='#b3261e';b.innerText='Zonein gagal dimuat: '+m+'. Coba Chrome terbaru atau buka di browser biasa (bukan pratinjau dalam aplikasi).';}}
+    window.addEventListener('error',function(e){bootFail(e.message||'kesalahan skrip')});
+    window.addEventListener('unhandledrejection',function(e){bootFail(String(e.reason))});
+    new MutationObserver(function(_,o){if(document.querySelector('flutter-view,flt-glass-pane')){var b=document.getElementById('boot');if(b)b.remove();o.disconnect()}}).observe(document.documentElement,{childList:true,subtree:true});
+    setTimeout(function(){var b=document.getElementById('boot');if(b&&document.querySelector('flutter-view,flt-glass-pane')==null)bootFail('waktu habis')},20000);
+    var c=document.createElement('canvas');if(!(c.getContext('webgl2')||c.getContext('webgl')))bootFail('WebGL tidak tersedia di browser ini');
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

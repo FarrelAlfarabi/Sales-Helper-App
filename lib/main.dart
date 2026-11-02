@@ -10,8 +10,8 @@ import 'features/home/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Intl.defaultLocale = 'id_ID';
-  await initializeDateFormatting('id_ID');
+  Intl.defaultLocale = 'id';
+  await initializeDateFormatting('id');
   // Supabase init used to be awaited here, before runApp() -- meaning
   // nothing painted at all (a blank white tab, no spinner, no error) until
   // it finished. If that call is slow or silently stuck (blocked network,
