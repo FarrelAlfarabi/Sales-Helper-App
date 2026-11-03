@@ -24,7 +24,8 @@ class ZoneMap extends StatelessWidget {
       child: SizedBox(
         height: height,
         child: FlutterMap(
-          options: MapOptions(initialCenter: zoneCenter ?? point, initialZoom: 17),
+          options:
+              MapOptions(initialCenter: zoneCenter ?? point, initialZoom: 17),
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -46,7 +47,8 @@ class ZoneMap extends StatelessWidget {
                 point: point,
                 width: 40,
                 height: 40,
-                child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                child:
+                    const Icon(Icons.location_pin, color: Colors.red, size: 40),
               ),
             ]),
           ],

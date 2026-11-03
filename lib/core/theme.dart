@@ -19,16 +19,19 @@ class AppTheme {
   static ThemeData dark() => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
-    final colorScheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
+    final colorScheme =
+        ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
     final isLight = brightness == Brightness.light;
-    final base = ThemeData(brightness: brightness, useMaterial3: true).textTheme;
+    final base =
+        ThemeData(brightness: brightness, useMaterial3: true).textTheme;
     final line = isLight ? const Color(0xFFD9E2DE) : const Color(0xFF2A3A33);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: GoogleFonts.ibmPlexSansTextTheme(base),
-      scaffoldBackgroundColor: isLight ? const Color(0xFFF6F8F7) : colorScheme.surface,
+      scaffoldBackgroundColor:
+          isLight ? const Color(0xFFF6F8F7) : colorScheme.surface,
       cardTheme: CardThemeData(
         elevation: 0,
         margin: const EdgeInsets.only(bottom: 8),
@@ -40,7 +43,8 @@ class AppTheme {
       ),
       dividerColor: line,
       appBarTheme: AppBarTheme(
-        backgroundColor: isLight ? const Color(0xFFF6F8F7) : colorScheme.surface,
+        backgroundColor:
+            isLight ? const Color(0xFFF6F8F7) : colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 1,
@@ -48,7 +52,8 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

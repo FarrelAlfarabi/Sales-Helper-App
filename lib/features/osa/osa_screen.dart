@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/photo_capture.dart';
@@ -68,7 +69,9 @@ class _OsaScreenState extends State<OsaScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ketersediaan di Rak')),
+      appBar: AppBar(
+          title: const Text('Ketersediaan di Rak'),
+          actions: const [HelpButton(HelpTopic.osa)]),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -93,13 +96,19 @@ class _OsaScreenState extends State<OsaScreen> {
                 ),
                 child: ListTile(
                   leading: Icon(
-                    _saved[entry.key] == true ? Icons.check_circle : Icons.camera_alt_outlined,
-                    color: _saved[entry.key] == true ? colorScheme.primary : colorScheme.outline,
+                    _saved[entry.key] == true
+                        ? Icons.check_circle
+                        : Icons.camera_alt_outlined,
+                    color: _saved[entry.key] == true
+                        ? colorScheme.primary
+                        : colorScheme.outline,
                   ),
                   title: Text(entry.value),
                   subtitle: _saving[entry.key] == true
                       ? const Text('Mengunggah...')
-                      : (_saved[entry.key] == true ? const Text('Tersimpan') : null),
+                      : (_saved[entry.key] == true
+                          ? const Text('Tersimpan')
+                          : null),
                   trailing: _saving[entry.key] == true
                       ? const SizedBox(
                           height: 20,
@@ -107,7 +116,9 @@ class _OsaScreenState extends State<OsaScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.chevron_right),
-                  onTap: _saving[entry.key] == true ? null : () => _logPlacement(entry.key),
+                  onTap: _saving[entry.key] == true
+                      ? null
+                      : () => _logPlacement(entry.key),
                 ),
               ),
             const SizedBox(height: 12),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -51,9 +52,8 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
           .eq('employee_id', userId)
           .eq('is_active', true);
       setState(() {
-        _assignedStores = rows
-            .map((r) => r['stores'] as Map<String, dynamic>)
-            .toList();
+        _assignedStores =
+            rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
       });
     } catch (e) {
       setState(() => _error = 'Gagal memuat toko tugas: $e');
@@ -88,7 +88,8 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
       final photo = await PhotoCapture.capture(source: ImageSource.camera);
@@ -127,7 +128,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
       if (isWithinGeofence == false) {
         setState(() => _error =
             'Kunjungan tercatat, tetapi kamu berada ${distance?.toStringAsFixed(0)}m dari toko '
-            '-- di luar geofence. Ini akan ditandai di laporan.');
+                '-- di luar geofence. Ini akan ditandai di laporan.');
       }
 
       Navigator.of(context).push(
@@ -145,7 +146,9 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kunjungan Toko')),
+      appBar: AppBar(
+          title: const Text('Kunjungan Toko'),
+          actions: const [HelpButton(HelpTopic.storeVisit)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _assignedStores.isEmpty
@@ -168,12 +171,15 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
                       ),
                       const SizedBox(height: 20),
                       if (_error != null) ...[
-                        Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                        Text(_error!,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.error)),
                         const SizedBox(height: 16),
                       ],
                       FilledButton.icon(
                         icon: const Icon(Icons.camera_alt),
-                        label: Text(_submitting ? 'Mengirim...' : 'Kirim Kunjungan'),
+                        label: Text(
+                            _submitting ? 'Mengirim...' : 'Kirim Kunjungan'),
                         onPressed: _submitting ? null : _submitVisit,
                       ),
                     ],
@@ -196,9 +202,11 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.storefront_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+            Icon(Icons.storefront_outlined,
+                size: 48, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 16),
-            const Text('Belum ada toko yang ditugaskan kepadamu.', textAlign: TextAlign.center),
+            const Text('Belum ada toko yang ditugaskan kepadamu.',
+                textAlign: TextAlign.center),
             const SizedBox(height: 16),
             OutlinedButton(onPressed: onRetry, child: const Text('Muat ulang')),
           ],

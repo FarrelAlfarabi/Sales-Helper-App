@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/supabase_client.dart';
@@ -103,7 +104,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Input Penjualan')),
+      appBar: AppBar(
+          title: const Text('Input Penjualan'),
+          actions: const [HelpButton(HelpTopic.sales)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -122,32 +125,46 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                           decoration: const InputDecoration(labelText: 'Toko'),
                           items: [
                             for (final s in _stores)
-                              DropdownMenuItem(value: s['id'] as String, child: Text('${s['name']} (${s['code']})')),
+                              DropdownMenuItem(
+                                  value: s['id'] as String,
+                                  child: Text('${s['name']} (${s['code']})')),
                           ],
                           onChanged: (v) => setState(() => _storeId = v),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _product,
-                          decoration: const InputDecoration(labelText: 'Produk'),
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Produk wajib diisi' : null,
+                          decoration:
+                              const InputDecoration(labelText: 'Produk'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Produk wajib diisi'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _units,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Unit terjual'),
-                          validator: (v) => int.tryParse((v ?? '').trim()) == null ? 'Isi dengan bilangan bulat' : null,
+                          decoration:
+                              const InputDecoration(labelText: 'Unit terjual'),
+                          validator: (v) =>
+                              int.tryParse((v ?? '').trim()) == null
+                                  ? 'Isi dengan bilangan bulat'
+                                  : null,
                         ),
                         const SizedBox(height: 8),
                         TextButton.icon(
                           icon: const Icon(Icons.event),
-                          label: Text('Tanggal: ${DateFormat('dd MMM yyyy').format(_date)}'),
+                          label: Text(
+                              'Tanggal: ${DateFormat('dd MMM yyyy').format(_date)}'),
                           onPressed: _pickDate,
                         ),
-                        if (_error != null) Text(_error!, style: TextStyle(color: cs.error)),
+                        if (_error != null)
+                          Text(_error!, style: TextStyle(color: cs.error)),
                         const SizedBox(height: 8),
-                        FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? 'Menyimpan...' : 'Simpan penjualan')),
+                        FilledButton(
+                            onPressed: _saving ? null : _save,
+                            child: Text(
+                                _saving ? 'Menyimpan...' : 'Simpan penjualan')),
                       ],
                     ),
                   ),
@@ -157,7 +174,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(r['product_name'] as String),
-                    subtitle: Text('${(r['stores'] as Map?)?['name'] ?? ''}, ${r['sale_date']}'),
+                    subtitle: Text(
+                        '${(r['stores'] as Map?)?['name'] ?? ''}, ${r['sale_date']}'),
                     trailing: Text('${r['units_sold']} unit'),
                   ),
               ],

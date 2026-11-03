@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -42,9 +43,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
           );
       if (widget.mine) q = q.eq('employee_id', supabase.auth.currentUser!.id);
       if (_range != null) {
-        q = q
-            .gte('clock_in_at', _range!.start.toUtc().toIso8601String())
-            .lt('clock_in_at', _range!.end.add(const Duration(days: 1)).toUtc().toIso8601String());
+        q = q.gte('clock_in_at', _range!.start.toUtc().toIso8601String()).lt(
+            'clock_in_at',
+            _range!.end.add(const Duration(days: 1)).toUtc().toIso8601String());
       }
       final rows = await q.order('clock_in_at', ascending: false).limit(200);
       setState(() => _records = List<Map<String, dynamic>>.from(rows));
@@ -69,8 +70,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
     }
   }
 
-  static String _t(String? iso) =>
-      iso == null ? '-' : DateFormat('HH:mm').format(DateTime.parse(iso).toLocal());
+  static String _t(String? iso) => iso == null
+      ? '-'
+      : DateFormat('HH:mm').format(DateTime.parse(iso).toLocal());
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +90,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                 _load();
               },
             ),
-          IconButton(tooltip: 'Filter tanggal', icon: const Icon(Icons.filter_list), onPressed: _pickRange),
+          IconButton(
+              tooltip: 'Filter tanggal',
+              icon: const Icon(Icons.filter_list),
+              onPressed: _pickRange),
+          HelpButton(
+              widget.mine ? HelpTopic.myAttendance : HelpTopic.attendanceAll),
         ],
       ),
       body: _loading
@@ -98,7 +105,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  if (_error != null) Text(_error!, style: TextStyle(color: cs.error)),
+                  if (_error != null)
+                    Text(_error!, style: TextStyle(color: cs.error)),
                   if (_records.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
@@ -109,7 +117,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(12),
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => PresenceDetailScreen(record: r)),
+                          MaterialPageRoute(
+                              builder: (_) => PresenceDetailScreen(record: r)),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(14),
@@ -117,20 +126,29 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                DateFormat('EEE, dd-MM-yyyy').format(DateTime.parse(r['clock_in_at']).toLocal()),
+                                DateFormat('EEE, dd-MM-yyyy').format(
+                                    DateTime.parse(r['clock_in_at']).toLocal()),
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                (r['profiles'] as Map?)?['full_name'] as String? ?? 'Tidak diketahui',
+                                (r['profiles'] as Map?)?['full_name']
+                                        as String? ??
+                                    'Tidak diketahui',
                                 style: Theme.of(context).textTheme.titleSmall,
                               ),
                               const SizedBox(height: 10),
                               Row(
                                 children: [
-                                  Expanded(child: _TimeChip(label: 'Absen Masuk', value: _t(r['clock_in_at']))),
+                                  Expanded(
+                                      child: _TimeChip(
+                                          label: 'Absen Masuk',
+                                          value: _t(r['clock_in_at']))),
                                   const SizedBox(width: 8),
-                                  Expanded(child: _TimeChip(label: 'Absen Pulang', value: _t(r['clock_out_at']))),
+                                  Expanded(
+                                      child: _TimeChip(
+                                          label: 'Absen Pulang',
+                                          value: _t(r['clock_out_at']))),
                                 ],
                               ),
                             ],
@@ -155,7 +173,9 @@ class _TimeChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(color: cs.surfaceContainerHighest, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(10)),
       child: Column(children: [
         Text(label, style: Theme.of(context).textTheme.labelSmall),
         Text(value, style: Theme.of(context).textTheme.titleSmall),
@@ -174,28 +194,41 @@ class PresenceDetailScreen extends StatelessWidget {
     final r = record;
     final lat = (r['clock_in_latitude'] as num).toDouble();
     final lng = (r['clock_in_longitude'] as num).toDouble();
-    String fmt(String? iso) =>
-        iso == null ? 'Belum' : DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(iso).toLocal());
+    String fmt(String? iso) => iso == null
+        ? 'Belum'
+        : DateFormat('dd-MM-yyyy HH:mm').format(DateTime.parse(iso).toLocal());
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Kehadiran')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text((r['profiles'] as Map?)?['full_name'] as String? ?? 'Tidak diketahui',
+          Text(
+              (r['profiles'] as Map?)?['full_name'] as String? ??
+                  'Tidak diketahui',
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: _TimeChip(label: 'Absen Masuk', value: fmt(r['clock_in_at']))),
+            Expanded(
+                child: _TimeChip(
+                    label: 'Absen Masuk', value: fmt(r['clock_in_at']))),
             const SizedBox(width: 8),
-            Expanded(child: _TimeChip(label: 'Absen Pulang', value: fmt(r['clock_out_at']))),
+            Expanded(
+                child: _TimeChip(
+                    label: 'Absen Pulang', value: fmt(r['clock_out_at']))),
           ]),
           const SizedBox(height: 20),
           Text('Foto', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Row(children: [
-            Expanded(child: SignedPhoto(bucket: 'attendance-selfies', path: r['clock_in_selfie_url'] as String?)),
+            Expanded(
+                child: SignedPhoto(
+                    bucket: 'attendance-selfies',
+                    path: r['clock_in_selfie_url'] as String?)),
             const SizedBox(width: 8),
-            Expanded(child: SignedPhoto(bucket: 'attendance-selfies', path: r['clock_out_selfie_url'] as String?)),
+            Expanded(
+                child: SignedPhoto(
+                    bucket: 'attendance-selfies',
+                    path: r['clock_out_selfie_url'] as String?)),
           ]),
           const SizedBox(height: 20),
           Text('Lokasi', style: Theme.of(context).textTheme.titleSmall),

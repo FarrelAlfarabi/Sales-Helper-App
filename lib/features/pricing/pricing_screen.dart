@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/supabase_client.dart';
@@ -47,7 +48,8 @@ class _PricingScreenState extends State<PricingScreen> {
           .select('stores(id, name, code)')
           .eq('employee_id', uid)
           .eq('is_active', true);
-      final stores = rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
+      final stores =
+          rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
       final recent = await supabase
           .from('price_reports')
           .select('product_name, price_idr, is_promo, created_at, stores(name)')
@@ -96,7 +98,9 @@ class _PricingScreenState extends State<PricingScreen> {
     final cs = Theme.of(context).colorScheme;
     final money = NumberFormat.decimalPattern('id');
     return Scaffold(
-      appBar: AppBar(title: const Text('Harga')),
+      appBar: AppBar(
+          title: const Text('Harga'),
+          actions: const [HelpButton(HelpTopic.pricing)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -115,22 +119,31 @@ class _PricingScreenState extends State<PricingScreen> {
                           decoration: const InputDecoration(labelText: 'Toko'),
                           items: [
                             for (final s in _stores)
-                              DropdownMenuItem(value: s['id'] as String, child: Text('${s['name']} (${s['code']})')),
+                              DropdownMenuItem(
+                                  value: s['id'] as String,
+                                  child: Text('${s['name']} (${s['code']})')),
                           ],
                           onChanged: (v) => setState(() => _storeId = v),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _product,
-                          decoration: const InputDecoration(labelText: 'Produk'),
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Produk wajib diisi' : null,
+                          decoration:
+                              const InputDecoration(labelText: 'Produk'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Produk wajib diisi'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _price,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Harga rak (Rp)'),
-                          validator: (v) => int.tryParse((v ?? '').trim()) == null ? 'Isi dengan bilangan bulat' : null,
+                          decoration: const InputDecoration(
+                              labelText: 'Harga rak (Rp)'),
+                          validator: (v) =>
+                              int.tryParse((v ?? '').trim()) == null
+                                  ? 'Isi dengan bilangan bulat'
+                                  : null,
                         ),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
@@ -138,9 +151,13 @@ class _PricingScreenState extends State<PricingScreen> {
                           value: _promo,
                           onChanged: (v) => setState(() => _promo = v),
                         ),
-                        if (_error != null) Text(_error!, style: TextStyle(color: cs.error)),
+                        if (_error != null)
+                          Text(_error!, style: TextStyle(color: cs.error)),
                         const SizedBox(height: 8),
-                        FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? 'Menyimpan...' : 'Simpan harga')),
+                        FilledButton(
+                            onPressed: _saving ? null : _save,
+                            child: Text(
+                                _saving ? 'Menyimpan...' : 'Simpan harga')),
                       ],
                     ),
                   ),
@@ -150,7 +167,8 @@ class _PricingScreenState extends State<PricingScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(r['product_name'] as String),
-                    subtitle: Text('${(r['stores'] as Map?)?['name'] ?? ''}${r['is_promo'] == true ? ' - promo' : ''}'),
+                    subtitle: Text(
+                        '${(r['stores'] as Map?)?['name'] ?? ''}${r['is_promo'] == true ? ' - promo' : ''}'),
                     trailing: Text('Rp ${money.format(r['price_idr'])}'),
                   ),
               ],

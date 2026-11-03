@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -113,7 +114,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
     try {
       final position = await _requireCurrentPosition();
       final selfie = await _captureSelfie();
-      if (selfie == null) throw Exception('Foto selfie wajib untuk absen masuk.');
+      if (selfie == null)
+        throw Exception('Foto selfie wajib untuk absen masuk.');
 
       final userId = supabase.auth.currentUser!.id;
       final selfiePath = await _uploadSelfie(selfie, userId);
@@ -143,7 +145,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
     try {
       final position = await _requireCurrentPosition();
       final selfie = await _captureSelfie();
-      if (selfie == null) throw Exception('Foto selfie wajib untuk absen pulang.');
+      if (selfie == null)
+        throw Exception('Foto selfie wajib untuk absen pulang.');
 
       final userId = supabase.auth.currentUser!.id;
       final selfiePath = await _uploadSelfie(selfie, userId);
@@ -170,7 +173,9 @@ class _ClockInScreenState extends State<ClockInScreen> {
     final isClockedIn = _openRecord != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Absensi')),
+      appBar: AppBar(
+          title: const Text('Absensi'),
+          actions: const [HelpButton(HelpTopic.attendance)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -193,11 +198,15 @@ class _ClockInScreenState extends State<ClockInScreen> {
                           Icon(
                             isClockedIn ? Icons.check_circle : Icons.schedule,
                             size: 40,
-                            color: isClockedIn ? colorScheme.primary : colorScheme.outline,
+                            color: isClockedIn
+                                ? colorScheme.primary
+                                : colorScheme.outline,
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            isClockedIn ? 'Sudah absen masuk' : 'Belum absen masuk',
+                            isClockedIn
+                                ? 'Sudah absen masuk'
+                                : 'Belum absen masuk',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           if (isClockedIn) ...[
@@ -224,7 +233,9 @@ class _ClockInScreenState extends State<ClockInScreen> {
                       label: Text(_submitting
                           ? 'Mengirim...'
                           : (isClockedIn ? 'Absen Pulang' : 'Absen Masuk')),
-                      onPressed: _submitting ? null : (isClockedIn ? _clockOut : _clockIn),
+                      onPressed: _submitting
+                          ? null
+                          : (isClockedIn ? _clockOut : _clockIn),
                     ),
                   ),
                 ],

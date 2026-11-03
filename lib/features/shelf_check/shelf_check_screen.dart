@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -90,13 +91,16 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
       final data = res.data as Map<String, dynamic>;
       if (data['error'] != null) throw Exception(data['error']);
       final check = Map<String, dynamic>.from(data['shelf_check'] as Map);
-      final name = _stores.firstWhere((s) => s['id'] == _storeId, orElse: () => {})['name'];
+      final name = _stores.firstWhere((s) => s['id'] == _storeId,
+          orElse: () => {})['name'];
       check['stores'] = {'name': name};
       _load();
       if (!mounted) return;
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => ShelfResultScreen(check: check)));
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => ShelfResultScreen(check: check)));
     } on FunctionException catch (e) {
-      setState(() => _error = 'Analisis gagal: ${e.details ?? e.reasonPhrase ?? e.status}');
+      setState(() => _error =
+          'Analisis gagal: ${e.details ?? e.reasonPhrase ?? e.status}');
     } catch (e) {
       setState(() => _error = '$e');
     } finally {
@@ -108,7 +112,9 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Cek Rak')),
+      appBar: AppBar(
+          title: const Text('Cek Rak'),
+          actions: const [HelpButton(HelpTopic.shelfCheck)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -122,7 +128,9 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
                     decoration: const InputDecoration(labelText: 'Toko'),
                     items: [
                       for (final s in _stores)
-                        DropdownMenuItem(value: s['id'] as String, child: Text('${s['name']} (${s['code']})')),
+                        DropdownMenuItem(
+                            value: s['id'] as String,
+                            child: Text('${s['name']} (${s['code']})')),
                     ],
                     onChanged: (v) => setState(() => _storeId = v),
                   ),
@@ -131,7 +139,8 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
                     controller: _brands,
                     decoration: const InputDecoration(
                       labelText: 'Merek kamu (opsional)',
-                      helperText: 'Pisahkan dengan koma. Membantu AI menghitung porsi rak dan pesaing.',
+                      helperText:
+                          'Pisahkan dengan koma. Membantu AI menghitung porsi rak dan pesaing.',
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -146,17 +155,24 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
                     onPressed: _busy ? null : _capture,
                   ),
                 ],
-                if (_busy) const Padding(padding: EdgeInsets.only(top: 16), child: LinearProgressIndicator()),
+                if (_busy)
+                  const Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: LinearProgressIndicator()),
                 if (_error != null)
-                  Padding(padding: const EdgeInsets.only(top: 16), child: Text(_error!, style: TextStyle(color: cs.error))),
+                  Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text(_error!, style: TextStyle(color: cs.error))),
                 if (_history.isNotEmpty) ...[
                   const SizedBox(height: 28),
-                  Text('Cek terbaru', style: Theme.of(context).textTheme.titleSmall),
+                  Text('Cek terbaru',
+                      style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 8),
                   for (final h in _history)
                     Card(
                       child: ListTile(
-                        title: Text('${(h['stores'] as Map?)?['name'] ?? 'Toko'}'),
+                        title:
+                            Text('${(h['stores'] as Map?)?['name'] ?? 'Toko'}'),
                         subtitle: Text(
                           '${DateFormat('dd MMM HH:mm').format(DateTime.parse(h['created_at']).toLocal())}'
                           '${h['summary'] != null ? '\n${h['summary']}' : ''}',
@@ -165,8 +181,9 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
                         ),
                         isThreeLine: h['summary'] != null,
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (_) => ShelfResultScreen(check: h))),
+                        onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => ShelfResultScreen(check: h))),
                       ),
                     ),
                 ],
@@ -184,7 +201,9 @@ class ShelfResultScreen extends StatelessWidget {
   final Map<String, dynamic> check;
 
   static List<Map<String, dynamic>> _list(Object? v) =>
-      [...((v as List?) ?? const [])].map((e) => e is Map ? Map<String, dynamic>.from(e) : {'text': '$e'}).toList();
+      [...((v as List?) ?? const [])]
+          .map((e) => e is Map ? Map<String, dynamic>.from(e) : {'text': '$e'})
+          .toList();
 
   static const _statusOrder = {'out': 0, 'low': 1, 'ok': 2};
 
@@ -195,14 +214,18 @@ class ShelfResultScreen extends StatelessWidget {
     final a = (check['analysis'] as Map?)?.cast<String, dynamic>() ?? const {};
     final quality = (a['photo_quality'] as Map?)?.cast<String, dynamic>();
     final shelf = (a['shelf'] as Map?)?.cast<String, dynamic>() ?? const {};
-    final actions = _list(a['key_actions'])..sort((x, y) => ((x['priority'] ?? 99) as num).compareTo((y['priority'] ?? 99) as num));
+    final actions = _list(a['key_actions'])
+      ..sort((x, y) => ((x['priority'] ?? 99) as num)
+          .compareTo((y['priority'] ?? 99) as num));
     final analysis = _list(a['analysis']);
     final products = _list(a['products'])
-      ..sort((x, y) => (_statusOrder[x['status']] ?? 3).compareTo(_statusOrder[y['status']] ?? 3));
+      ..sort((x, y) => (_statusOrder[x['status']] ?? 3)
+          .compareTo(_statusOrder[y['status']] ?? 3));
     final gaps = _list(a['gaps']);
     final comps = _list(a['competitors']);
     final issues = _list(a['placement_issues']);
-    final limits = ((a['limits'] as List?) ?? const []).map((e) => '$e').toList();
+    final limits =
+        ((a['limits'] as List?) ?? const []).map((e) => '$e').toList();
     final unusable = quality != null && quality['usable'] == false;
     final stores = (check['stores'] as Map?)?['name'];
 
@@ -213,7 +236,8 @@ class ShelfResultScreen extends StatelessWidget {
               border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(value ?? '-', style: t.titleLarge),
               Text(label, style: t.bodySmall),
             ]),
@@ -227,11 +251,17 @@ class ShelfResultScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          if (check['photo_path'] != null) SignedPhoto(bucket: 'osa-photos', path: check['photo_path'] as String?, height: 200),
+          if (check['photo_path'] != null)
+            SignedPhoto(
+                bucket: 'osa-photos',
+                path: check['photo_path'] as String?,
+                height: 200),
           if (unusable)
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text('Foto tidak bisa dipakai: ${quality['issue'] ?? 'ambil ulang foto'}', style: TextStyle(color: cs.error)),
+              child: Text(
+                  'Foto tidak bisa dipakai: ${quality['issue'] ?? 'ambil ulang foto'}',
+                  style: TextStyle(color: cs.error)),
             ),
           if ((check['summary'] ?? shelf['summary']) != null) ...[
             const SizedBox(height: 16),
@@ -247,56 +277,69 @@ class ShelfResultScreen extends StatelessWidget {
               stat('Facing terlihat', shelf['total_facings']?.toString()),
             ]),
           ],
-
           _Heading('Tindakan utama'),
           if (actions.isEmpty) const Text('Tidak ada tindakan disarankan.'),
           for (final x in actions)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),
-                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  CircleAvatar(radius: 13, child: Text('${(x['priority'] as num?)?.toInt() ?? '-'}')),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${x['action'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                      if (x['why'] != null) Text('${x['why']}'),
-                      const SizedBox(height: 6),
-                      Wrap(spacing: 6, children: [
-                        _Tag(_urgency(x['urgency'])),
-                        _Tag(x['owner'] == 'manager' ? 'Perlu manajer' : 'Kamu'),
-                        if (x['product'] != null) _Tag('${x['product']}'),
-                      ]),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                          radius: 13,
+                          child: Text(
+                              '${(x['priority'] as num?)?.toInt() ?? '-'}')),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${x['action'] ?? ''}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                              if (x['why'] != null) Text('${x['why']}'),
+                              const SizedBox(height: 6),
+                              Wrap(spacing: 6, children: [
+                                _Tag(_urgency(x['urgency'])),
+                                _Tag(x['owner'] == 'manager'
+                                    ? 'Perlu manajer'
+                                    : 'Kamu'),
+                                if (x['product'] != null)
+                                  _Tag('${x['product']}'),
+                              ]),
+                            ]),
+                      ),
                     ]),
-                  ),
-                ]),
               ),
             ),
-
           _Heading('Analisis'),
           if (analysis.isEmpty) const Text('Tidak ada analisis.'),
           for (final x in analysis)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${x['title'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                  if (x['detail'] != null) Text('${x['detail']}'),
-                  if ((x['evidence'] ?? '').toString().isNotEmpty) Text('${x['evidence']}', style: t.bodySmall),
-                ]),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${x['title'] ?? ''}',
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      if (x['detail'] != null) Text('${x['detail']}'),
+                      if ((x['evidence'] ?? '').toString().isNotEmpty)
+                        Text('${x['evidence']}', style: t.bodySmall),
+                    ]),
               ),
             ),
-
           _Heading('Produk'),
           for (final p in products) _ProductTile(p: p),
-
           if (gaps.isNotEmpty) ...[
             _Heading('Celah di rak'),
             for (final g in gaps)
               Card(
                 child: ListTile(
                   title: Text('${g['location'] ?? ''}'),
-                  subtitle: Text('${g['description'] ?? ''}${g['likely_product'] != null ? '\nLikely: ${g['likely_product']}' : ''}'),
+                  subtitle: Text(
+                      '${g['description'] ?? ''}${g['likely_product'] != null ? '\nLikely: ${g['likely_product']}' : ''}'),
                 ),
               ),
           ],
@@ -307,18 +350,25 @@ class ShelfResultScreen extends StatelessWidget {
                 child: ListTile(
                   title: Text('${c['brand'] ?? ''}'),
                   subtitle: Text('${c['note'] ?? ''}'),
-                  trailing: Text('${c['facings'] ?? '-'} facings\n${pct(c['share_pct'])}', textAlign: TextAlign.end),
+                  trailing: Text(
+                      '${c['facings'] ?? '-'} facings\n${pct(c['share_pct'])}',
+                      textAlign: TextAlign.end),
                 ),
               ),
           ],
           if (issues.isNotEmpty) ...[
             _Heading('Masalah penempatan'),
             for (final i in issues)
-              Card(child: ListTile(title: Text('${i['issue'] ?? ''}'), subtitle: Text('${i['detail'] ?? ''}'))),
+              Card(
+                  child: ListTile(
+                      title: Text('${i['issue'] ?? ''}'),
+                      subtitle: Text('${i['detail'] ?? ''}'))),
           ],
-
           _Heading('Yang tidak bisa dilihat dari foto ini'),
-          for (final l in limits) Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('• $l', style: t.bodySmall)),
+          for (final l in limits)
+            Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• $l', style: t.bodySmall)),
           Text(
             'Perkiraan AI dari satu foto. Jumlah dan porsi hanya kira-kira. Pastikan sebelum memesan.',
             style: t.bodySmall,
@@ -356,8 +406,12 @@ class _Tag extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(99)),
-      child: Text(text, style: TextStyle(color: cs.primary, fontSize: 11, fontWeight: FontWeight.w600)),
+      decoration: BoxDecoration(
+          color: cs.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(99)),
+      child: Text(text,
+          style: TextStyle(
+              color: cs.primary, fontSize: 11, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -381,14 +435,19 @@ class _ProductTile extends StatelessWidget {
     final bits = <String>[
       if (p['brand'] != null) '${p['brand']}',
       if (p['facings'] != null) '${p['facings']} facing',
-      if (p['share_pct'] != null) '${(p['share_pct'] as num).round()}% dari rak',
-      if (p['shelf_row'] != null && p['shelf_row'] != 'unknown') '${p['shelf_row']} rak',
+      if (p['share_pct'] != null)
+        '${(p['share_pct'] as num).round()}% dari rak',
+      if (p['shelf_row'] != null && p['shelf_row'] != 'unknown')
+        '${p['shelf_row']} rak',
       if (p['is_focus_brand'] == true) 'merek kamu',
     ];
     String priceText() {
-      if (price == null || price['seen'] != true) return 'Label harga tidak terlihat';
+      if (price == null || price['seen'] != true)
+        return 'Label harga tidak terlihat';
       final v = price['price_idr'];
-      final base = v == null ? 'Label harga terlihat, tidak terbaca' : 'Rp ${money.format(v)}';
+      final base = v == null
+          ? 'Label harga terlihat, tidak terbaca'
+          : 'Rp ${money.format(v)}';
       return price['promo'] == true ? '$base (promo)' : base;
     }
 
@@ -399,16 +458,27 @@ class _ProductTile extends StatelessWidget {
           Row(children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(99)),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(99)),
               child: Text((status ?? '?').toUpperCase(),
-                  style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11)),
+                  style: TextStyle(
+                      color: color, fontWeight: FontWeight.w700, fontSize: 11)),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text('${p['name'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600))),
+            Expanded(
+                child: Text('${p['name'] ?? ''}',
+                    style: const TextStyle(fontWeight: FontWeight.w600))),
           ]),
-          if (bits.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(bits.join('  ·  '), style: t.bodySmall)),
+          if (bits.isNotEmpty)
+            Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(bits.join('  ·  '), style: t.bodySmall)),
           Text(priceText(), style: t.bodySmall),
-          if ((p['note'] ?? '').toString().isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: Text('${p['note']}')),
+          if ((p['note'] ?? '').toString().isNotEmpty)
+            Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('${p['note']}')),
           if (p['confidence'] != null && p['confidence'] != 'high')
             Text('${p['confidence']} keyakinan', style: t.bodySmall),
         ]),

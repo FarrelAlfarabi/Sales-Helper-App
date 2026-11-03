@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 import 'csv_import_screen.dart';
 
@@ -41,10 +42,12 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
           .select('id, full_name')
           .eq('role', 'field_rep')
           .order('full_name');
-      final stores = await supabase.from('stores').select('id, name, code').order('name');
+      final stores =
+          await supabase.from('stores').select('id, name, code').order('name');
       final assignments = await supabase
           .from('store_assignments')
-          .select('id, is_active, profiles!store_assignments_employee_id_fkey(full_name), stores(name, code)')
+          .select(
+              'id, is_active, profiles!store_assignments_employee_id_fkey(full_name), stores(name, code)')
           .eq('is_active', true);
 
       setState(() {
@@ -85,7 +88,9 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
 
   Future<void> _deactivate(String id) async {
     try {
-      await supabase.from('store_assignments').update({'is_active': false}).eq('id', id);
+      await supabase
+          .from('store_assignments')
+          .update({'is_active': false}).eq('id', id);
       await _load();
     } catch (e) {
       setState(() => _error = '$e');
@@ -98,11 +103,14 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
       appBar: AppBar(
         title: const Text('Penugasan Toko'),
         actions: [
+          const HelpButton(HelpTopic.assignments),
           IconButton(
             tooltip: 'Impor dari CSV',
             icon: const Icon(Icons.upload_file),
             onPressed: () async {
-              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CsvImportScreen(kind: CsvImportKind.assignments)));
+              await Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) =>
+                      const CsvImportScreen(kind: CsvImportKind.assignments)));
               _load();
             },
           ),
@@ -114,7 +122,9 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 if (_error != null)
-                  Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  Text(_error!,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error)),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedEmployeeId,
                   decoration: const InputDecoration(labelText: 'Karyawan'),
@@ -144,11 +154,13 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
                   child: Text(_submitting ? 'Menugaskan...' : 'Tugaskan'),
                 ),
                 const Divider(height: 32),
-                const Text('Penugasan saat ini', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Penugasan saat ini',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 for (final a in _assignments)
                   ListTile(
-                    title: Text('${(a['profiles'] as Map?)?['full_name'] ?? '?'} '
-                        '-> ${(a['stores'] as Map?)?['name'] ?? '?'}'),
+                    title:
+                        Text('${(a['profiles'] as Map?)?['full_name'] ?? '?'} '
+                            '-> ${(a['stores'] as Map?)?['name'] ?? '?'}'),
                     trailing: IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: () => _deactivate(a['id'] as String),

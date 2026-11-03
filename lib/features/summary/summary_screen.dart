@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 
 /// "Your Summary" for the signed-in employee, current month. Counts only,
@@ -40,7 +41,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
           .eq('employee_id', uid)
           .gte('clock_in_at', from);
       final days = <String>{
-        for (final r in att) DateTime.parse(r['clock_in_at']).toLocal().toIso8601String().substring(0, 10),
+        for (final r in att)
+          DateTime.parse(r['clock_in_at'])
+              .toLocal()
+              .toIso8601String()
+              .substring(0, 10),
       };
       final vis = await supabase
           .from('store_visits')
@@ -70,7 +75,9 @@ class _SummaryScreenState extends State<SummaryScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Ringkasan Aktivitas')),
+      appBar: AppBar(
+          title: const Text('Ringkasan Aktivitas'),
+          actions: const [HelpButton(HelpTopic.summary)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -78,9 +85,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Bulan ini', style: Theme.of(context).textTheme.titleMedium),
+                  Text('Bulan ini',
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 12),
-                  if (_error != null) Text(_error!, style: TextStyle(color: cs.error)),
+                  if (_error != null)
+                    Text(_error!, style: TextStyle(color: cs.error)),
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
@@ -89,10 +98,22 @@ class _SummaryScreenState extends State<SummaryScreen> {
                     crossAxisSpacing: 12,
                     childAspectRatio: 1.5,
                     children: [
-                      _Stat(label: 'Hari hadir', value: '$_days', icon: Icons.calendar_today),
-                      _Stat(label: 'Kunjungan toko', value: '$_visits', icon: Icons.storefront),
-                      _Stat(label: 'Dalam zona', value: _visits == 0 ? '-' : '$_inside/$_visits', icon: Icons.verified),
-                      _Stat(label: 'Cuti disetujui', value: '$_leave', icon: Icons.beach_access),
+                      _Stat(
+                          label: 'Hari hadir',
+                          value: '$_days',
+                          icon: Icons.calendar_today),
+                      _Stat(
+                          label: 'Kunjungan toko',
+                          value: '$_visits',
+                          icon: Icons.storefront),
+                      _Stat(
+                          label: 'Dalam zona',
+                          value: _visits == 0 ? '-' : '$_inside/$_visits',
+                          icon: Icons.verified),
+                      _Stat(
+                          label: 'Cuti disetujui',
+                          value: '$_leave',
+                          icon: Icons.beach_access),
                     ],
                   ),
                   if (_pending > 0) ...[

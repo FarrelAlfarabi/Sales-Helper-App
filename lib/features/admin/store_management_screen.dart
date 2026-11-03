@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 import 'csv_import_screen.dart';
 
@@ -60,11 +61,14 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       appBar: AppBar(
         title: const Text('Toko'),
         actions: [
+          const HelpButton(HelpTopic.stores),
           IconButton(
             tooltip: 'Impor dari CSV',
             icon: const Icon(Icons.upload_file),
             onPressed: () async {
-              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CsvImportScreen(kind: CsvImportKind.stores)));
+              await Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) =>
+                      const CsvImportScreen(kind: CsvImportKind.stores)));
               _load();
             },
           ),
@@ -83,7 +87,9 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(_error!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
                   for (final s in _stores)
                     Card(
                       child: ListTile(
@@ -143,7 +149,9 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
       await supabase.from('stores').insert({
         'code': _codeController.text.trim(),
         'name': _nameController.text.trim(),
-        'address': _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+        'address': _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
         'latitude': double.parse(_latController.text.trim()),
         'longitude': double.parse(_lngController.text.trim()),
         'geofence_radius_meters': int.parse(_radiusController.text.trim()),
@@ -172,17 +180,20 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Toko Baru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Toko Baru',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextFormField(
               controller: _codeController,
               decoration: const InputDecoration(labelText: 'Kode toko'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
             ),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Nama toko'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
             ),
             TextFormField(
               controller: _addressController,
@@ -194,8 +205,10 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
                   child: TextFormField(
                     controller: _latController,
                     decoration: const InputDecoration(labelText: 'Lintang'),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                    validator: (v) => double.tryParse(v ?? '') == null ? 'Tidak valid' : null,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true),
+                    validator: (v) =>
+                        double.tryParse(v ?? '') == null ? 'Tidak valid' : null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -203,21 +216,26 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
                   child: TextFormField(
                     controller: _lngController,
                     decoration: const InputDecoration(labelText: 'Bujur'),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                    validator: (v) => double.tryParse(v ?? '') == null ? 'Tidak valid' : null,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true),
+                    validator: (v) =>
+                        double.tryParse(v ?? '') == null ? 'Tidak valid' : null,
                   ),
                 ),
               ],
             ),
             TextFormField(
               controller: _radiusController,
-              decoration: const InputDecoration(labelText: 'Radius geofence (meter)'),
+              decoration:
+                  const InputDecoration(labelText: 'Radius geofence (meter)'),
               keyboardType: TextInputType.number,
-              validator: (v) => int.tryParse(v ?? '') == null ? 'Tidak valid' : null,
+              validator: (v) =>
+                  int.tryParse(v ?? '') == null ? 'Tidak valid' : null,
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(_error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
             const SizedBox(height: 16),
             FilledButton(

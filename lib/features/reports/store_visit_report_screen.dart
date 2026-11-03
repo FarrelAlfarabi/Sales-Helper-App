@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/signed_photo.dart';
@@ -58,7 +59,9 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Laporan Kunjungan Toko')),
+      appBar: AppBar(
+          title: const Text('Laporan Kunjungan Toko'),
+          actions: const [HelpButton(HelpTopic.visitReport)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -67,7 +70,9 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(_error!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
                   if (_visits.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
@@ -77,8 +82,12 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
                     Card(
                       child: ListTile(
                         leading: Icon(
-                          v['is_within_geofence'] == true ? Icons.check_circle : Icons.warning,
-                          color: v['is_within_geofence'] == true ? Colors.green : Colors.orange,
+                          v['is_within_geofence'] == true
+                              ? Icons.check_circle
+                              : Icons.warning,
+                          color: v['is_within_geofence'] == true
+                              ? Colors.green
+                              : Colors.orange,
                         ),
                         title: Text(
                           '${(v['profiles'] as Map?)?['full_name'] ?? '?'} -> '
@@ -91,7 +100,8 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
                         ),
                         isThreeLine: true,
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => VisitDetailScreen(visit: v)),
+                          MaterialPageRoute(
+                              builder: (_) => VisitDetailScreen(visit: v)),
                         ),
                       ),
                     ),
@@ -112,30 +122,37 @@ class VisitDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = (visit['stores'] as Map?) ?? const {};
     final inside = visit['is_within_geofence'] == true;
-    final point = LatLng((visit['check_in_latitude'] as num).toDouble(), (visit['check_in_longitude'] as num).toDouble());
+    final point = LatLng((visit['check_in_latitude'] as num).toDouble(),
+        (visit['check_in_longitude'] as num).toDouble());
     final center = (store['latitude'] != null && store['longitude'] != null)
-        ? LatLng((store['latitude'] as num).toDouble(), (store['longitude'] as num).toDouble())
+        ? LatLng((store['latitude'] as num).toDouble(),
+            (store['longitude'] as num).toDouble())
         : null;
     return Scaffold(
       appBar: AppBar(title: const Text('Zonasi Toko')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('${store['name'] ?? '?'} (${store['code'] ?? ''})', style: Theme.of(context).textTheme.titleMedium),
+          Text('${store['name'] ?? '?'} (${store['code'] ?? ''})',
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Chip(
-            avatar: Icon(inside ? Icons.check_circle : Icons.warning, color: inside ? Colors.green : Colors.orange),
+            avatar: Icon(inside ? Icons.check_circle : Icons.warning,
+                color: inside ? Colors.green : Colors.orange),
             label: Text(inside ? 'Dalam Zona' : 'Luar Zona'),
           ),
           const SizedBox(height: 12),
           ZoneMap(
             point: point,
             zoneCenter: center,
-            zoneRadiusMeters: (store['geofence_radius_meters'] as num?)?.toDouble(),
+            zoneRadiusMeters:
+                (store['geofence_radius_meters'] as num?)?.toDouble(),
             height: 280,
           ),
           const SizedBox(height: 16),
-          SignedPhoto(bucket: 'store-visit-photos', path: visit['store_photo_url'] as String?),
+          SignedPhoto(
+              bucket: 'store-visit-photos',
+              path: visit['store_photo_url'] as String?),
         ],
       ),
     );

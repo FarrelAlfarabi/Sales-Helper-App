@@ -67,7 +67,8 @@ class _BootGateState extends State<BootGate> {
       future: _init,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
         }
         if (snapshot.hasError) {
           return Scaffold(
@@ -98,7 +99,8 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  late final Stream<AuthState> _authStateStream = core.supabase.auth.onAuthStateChange;
+  late final Stream<AuthState> _authStateStream =
+      core.supabase.auth.onAuthStateChange;
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +111,8 @@ class _AuthGateState extends State<AuthGate> {
         core.supabase.auth.currentSession,
       ),
       builder: (context, snapshot) {
-        final session = snapshot.data?.session ?? core.supabase.auth.currentSession;
+        final session =
+            snapshot.data?.session ?? core.supabase.auth.currentSession;
         return session == null ? const LoginScreen() : const HomeScreen();
       },
     );

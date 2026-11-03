@@ -82,8 +82,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Email wajib diisi' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Email wajib diisi'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -92,17 +93,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Kata sandi',
                       suffixIcon: IconButton(
-                        tooltip: _obscure ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi',
-                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        tooltip: _obscure
+                            ? 'Tampilkan kata sandi'
+                            : 'Sembunyikan kata sandi',
+                        icon: Icon(
+                            _obscure ? Icons.visibility_off : Icons.visibility),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                     ),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Kata sandi wajib diisi' : null,
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? 'Kata sandi wajib diisi'
+                        : null,
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),
-                    Text(_errorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(_errorMessage!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../core/help.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +15,10 @@ enum CsvImportKind { stores, assignments }
 List<List<String>> parseCsv(String input) {
   var text = input.startsWith('﻿') ? input.substring(1) : input;
   final firstLine = text.split('\n').first;
-  final sep = (';'.allMatches(firstLine).length > ','.allMatches(firstLine).length) ? ';' : ',';
+  final sep =
+      (';'.allMatches(firstLine).length > ','.allMatches(firstLine).length)
+          ? ';'
+          : ',';
   final rows = <List<String>>[];
   var row = <String>[];
   final field = StringBuffer();
@@ -97,7 +101,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       _rows = null;
     });
     try {
-      final f = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: ['csv']);
+      final f = await FilePicker.pickFile(
+          type: FileType.custom, allowedExtensions: ['csv']);
       if (f == null) return;
       final size = await f.length();
       if (size != null && size > 2 * 1024 * 1024) {
@@ -110,7 +115,9 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
         _fileName = f.name;
       });
       final parsed = parseCsv(utf8.decode(bytes, allowMalformed: true));
-      final rows = _isStores ? await _checkStores(parsed) : await _checkAssignments(parsed);
+      final rows = _isStores
+          ? await _checkStores(parsed)
+          : await _checkAssignments(parsed);
       setState(() => _rows = rows);
     } catch (e) {
       setState(() => _error = 'Gagal membaca berkas: $e');
@@ -119,7 +126,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     }
   }
 
-  String _norm(String s) => s.trim().toLowerCase().replaceAll(RegExp(r'[\s_]+'), '');
+  String _norm(String s) =>
+      s.trim().toLowerCase().replaceAll(RegExp(r'[\s_]+'), '');
 
   Map<String, int> _header(List<String> h, Map<String, List<String>> names) {
     final out = <String, int>{};
@@ -136,7 +144,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     return out;
   }
 
-  String _cell(List<String> r, int? i) => (i == null || i >= r.length) ? '' : r[i].trim();
+  String _cell(List<String> r, int? i) =>
+      (i == null || i >= r.length) ? '' : r[i].trim();
 
   Future<List<_Row>> _checkStores(List<List<String>> parsed) async {
     if (parsed.isEmpty) throw 'Berkas kosong.';
@@ -148,12 +157,15 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       'lng': ['bujur', 'longitude', 'lng', 'lon'],
       'radius': ['radius', 'radius geofence'],
     });
-    final missing = ['code', 'name', 'lat', 'lng'].where((k) => !h.containsKey(k)).toList();
+    final missing =
+        ['code', 'name', 'lat', 'lng'].where((k) => !h.containsKey(k)).toList();
     if (missing.isNotEmpty) {
       throw 'Kolom wajib tidak ditemukan. Pakai header: kode, nama, alamat, lintang, bujur, radius.';
     }
     final existing = await supabase.from('stores').select('code');
-    final existingCodes = {for (final s in existing) (s['code'] as String).toLowerCase()};
+    final existingCodes = {
+      for (final s in existing) (s['code'] as String).toLowerCase()
+    };
     final seen = <String>{};
     final rows = <_Row>[];
     for (var i = 1; i < parsed.length; i++) {
@@ -207,17 +219,28 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       'code': ['kode toko', 'kode', 'code'],
       'name': ['nama toko', 'toko', 'nama', 'store'],
     });
-    if (!h.containsKey('email') || (!h.containsKey('code') && !h.containsKey('name'))) {
+    if (!h.containsKey('email') ||
+        (!h.containsKey('code') && !h.containsKey('name'))) {
       throw 'Kolom wajib tidak ditemukan. Pakai header: email, kode_toko.';
     }
     final staff = await supabase.rpc('list_staff_for_import') as List;
     final byEmail = {
-      for (final s in staff) (s['email'] as String).toLowerCase(): Map<String, dynamic>.from(s as Map),
+      for (final s in staff)
+        (s['email'] as String).toLowerCase():
+            Map<String, dynamic>.from(s as Map),
     };
-    final stores = List<Map<String, dynamic>>.from(await supabase.from('stores').select('id, name, code'));
-    final byCode = {for (final s in stores) (s['code'] as String).toLowerCase(): s};
-    final existing = await supabase.from('store_assignments').select('employee_id, store_id').eq('is_active', true);
-    final active = {for (final a in existing) '${a['employee_id']}|${a['store_id']}'};
+    final stores = List<Map<String, dynamic>>.from(
+        await supabase.from('stores').select('id, name, code'));
+    final byCode = {
+      for (final s in stores) (s['code'] as String).toLowerCase(): s
+    };
+    final existing = await supabase
+        .from('store_assignments')
+        .select('employee_id, store_id')
+        .eq('is_active', true);
+    final active = {
+      for (final a in existing) '${a['employee_id']}|${a['store_id']}'
+    };
     final seen = <String>{};
     final rows = <_Row>[];
     for (var i = 1; i < parsed.length; i++) {
@@ -242,7 +265,10 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
         if (code.isNotEmpty) {
           store = byCode[code.toLowerCase()];
         } else {
-          final m = stores.where((s) => (s['name'] as String).toLowerCase() == name.toLowerCase()).toList();
+          final m = stores
+              .where((s) =>
+                  (s['name'] as String).toLowerCase() == name.toLowerCase())
+              .toList();
           if (m.length > 1) {
             err = 'Nama toko ada lebih dari satu, pakai kode toko';
           } else if (m.length == 1) {
@@ -281,11 +307,14 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     });
     try {
       for (var i = 0; i < valid.length; i += 200) {
-        final chunk = valid.sublist(i, i + 200 > valid.length ? valid.length : i + 200);
+        final chunk =
+            valid.sublist(i, i + 200 > valid.length ? valid.length : i + 200);
         if (_isStores) {
           await supabase.from('stores').insert(chunk);
         } else {
-          await supabase.from('store_assignments').upsert(chunk, onConflict: 'employee_id,store_id');
+          await supabase
+              .from('store_assignments')
+              .upsert(chunk, onConflict: 'employee_id,store_id');
         }
       }
       setState(() {
@@ -293,7 +322,8 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
         _rows = null;
       });
     } catch (e) {
-      setState(() => _error = 'Impor gagal, sebagian mungkin sudah masuk. Muat ulang daftar lalu cek. Detail: $e');
+      setState(() => _error =
+          'Impor gagal, sebagian mungkin sudah masuk. Muat ulang daftar lalu cek. Detail: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -307,7 +337,13 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
     final errCount = rows?.where((r) => r.error != null).length ?? 0;
     final skipCount = rows?.where((r) => r.skip != null).length ?? 0;
     return Scaffold(
-      appBar: AppBar(title: Text(_isStores ? 'Impor Toko dari CSV' : 'Impor Penugasan dari CSV')),
+      appBar: AppBar(
+        title: Text(
+            _isStores ? 'Impor Toko dari CSV' : 'Impor Penugasan dari CSV'),
+        actions: [
+          HelpButton(_isStores ? HelpTopic.csvStores : HelpTopic.csvAssignments)
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -320,23 +356,29 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Contoh isi berkas', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                SelectableText(_template, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
-                const SizedBox(height: 6),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.copy, size: 18),
-                  label: const Text('Salin contoh'),
-                  onPressed: () async {
-                    await Clipboard.setData(ClipboardData(text: _template));
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(const SnackBar(content: Text('Contoh disalin. Tempel di Excel atau Notepad lalu simpan sebagai .csv')));
-                    }
-                  },
-                ),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Contoh isi berkas',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    SelectableText(_template,
+                        style: const TextStyle(
+                            fontFamily: 'monospace', fontSize: 12)),
+                    const SizedBox(height: 6),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.copy, size: 18),
+                      label: const Text('Salin contoh'),
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: _template));
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text(
+                                  'Contoh disalin. Tempel di Excel atau Notepad lalu simpan sebagai .csv')));
+                        }
+                      },
+                    ),
+                  ]),
             ),
           ),
           const SizedBox(height: 12),
@@ -345,21 +387,30 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
             label: Text(_busy ? 'Memproses...' : 'Pilih berkas CSV'),
             onPressed: _busy ? null : _pick,
           ),
-          if (_busy) const Padding(padding: EdgeInsets.only(top: 12), child: LinearProgressIndicator()),
+          if (_busy)
+            const Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: LinearProgressIndicator()),
           if (_error != null)
-            Padding(padding: const EdgeInsets.only(top: 12), child: Text(_error!, style: TextStyle(color: cs.error))),
+            Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(_error!, style: TextStyle(color: cs.error))),
           if (_done != null)
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Text(_done!, style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+              child: Text(_done!,
+                  style: TextStyle(
+                      color: cs.primary, fontWeight: FontWeight.bold)),
             ),
           if (rows != null) ...[
             const SizedBox(height: 16),
-            Text('${_fileName ?? ''}: $okCount siap diimpor, $skipCount dilewati, $errCount salah.',
+            Text(
+                '${_fileName ?? ''}: $okCount siap diimpor, $skipCount dilewati, $errCount salah.',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             if (errCount > 0)
-              const Text('Baris yang salah tidak akan diimpor. Perbaiki berkas lalu pilih ulang, atau impor baris yang benar saja.'),
+              const Text(
+                  'Baris yang salah tidak akan diimpor. Perbaiki berkas lalu pilih ulang, atau impor baris yang benar saja.'),
             const SizedBox(height: 8),
             FilledButton(
               onPressed: (_busy || okCount == 0) ? null : _import,
@@ -371,11 +422,19 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
                 child: ListTile(
                   dense: true,
                   leading: Icon(
-                    r.error != null ? Icons.error_outline : (r.skip != null ? Icons.remove_circle_outline : Icons.check_circle_outline),
-                    color: r.error != null ? cs.error : (r.skip != null ? cs.outline : cs.primary),
+                    r.error != null
+                        ? Icons.error_outline
+                        : (r.skip != null
+                            ? Icons.remove_circle_outline
+                            : Icons.check_circle_outline),
+                    color: r.error != null
+                        ? cs.error
+                        : (r.skip != null ? cs.outline : cs.primary),
                   ),
                   title: Text('Baris ${r.line}: ${r.label}'),
-                  subtitle: (r.error ?? r.skip) == null ? null : Text((r.error ?? r.skip)!),
+                  subtitle: (r.error ?? r.skip) == null
+                      ? null
+                      : Text((r.error ?? r.skip)!),
                 ),
               ),
           ],

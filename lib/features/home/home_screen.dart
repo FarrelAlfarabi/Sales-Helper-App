@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 import '../admin/store_assignment_screen.dart';
 import '../admin/store_management_screen.dart';
@@ -50,7 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadRole() async {
     try {
       final userId = supabase.auth.currentUser!.id;
-      final row = await supabase.from('profiles').select('role, full_name').eq('id', userId).single();
+      final row = await supabase
+          .from('profiles')
+          .select('role, full_name')
+          .eq('id', userId)
+          .single();
       setState(() {
         _isManagerOrAdmin = row['role'] == 'manager' || row['role'] == 'admin';
         _fullName = row['full_name'] as String?;
@@ -77,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Zonein'),
         actions: [
+          const HelpButton(HelpTopic.guide),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Keluar',
@@ -91,124 +97,153 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
                 child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: colorScheme.primaryContainer,
-                        child: Icon(Icons.person, color: colorScheme.onPrimaryContainer),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Halo,', style: Theme.of(context).textTheme.bodySmall),
-                            Text(
-                              (_fullName != null && _fullName!.isNotEmpty) ? _fullName! : email,
-                              style: Theme.of(context).textTheme.titleSmall,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: colorScheme.primaryContainer,
+                            child: Icon(Icons.person,
+                                color: colorScheme.onPrimaryContainer),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Halo,',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall),
+                                Text(
+                                  (_fullName != null && _fullName!.isNotEmpty)
+                                      ? _fullName!
+                                      : email,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _SectionHeader('Pekerjaanmu'),
+                    _MenuRow(
+                      icon: Icons.calendar_today,
+                      label: 'Absensi',
+                      subtitle:
+                          'masuk dan pulang kerja, dengan selfie dan lokasi',
+                      onTap: () => _push(context, const ClockInScreen()),
+                    ),
+                    _MenuRow(
+                      icon: Icons.storefront,
+                      label: 'Kunjungan Toko',
+                      subtitle:
+                          'check-in toko dengan foto, lalu isi ketersediaan di rak',
+                      onTap: () => _push(context, const StoreVisitScreen()),
+                    ),
+                    _MenuRow(
+                      icon: Icons.photo_camera_back_outlined,
+                      label: 'Cek Rak',
+                      subtitle:
+                          'foto lorong rak, AI beri daftar produk yang perlu restok',
+                      onTap: () => _push(context, const ShelfCheckScreen()),
+                    ),
+                    _MenuRow(
+                      icon: Icons.point_of_sale,
+                      label: 'Input Penjualan',
+                      subtitle: 'catat unit terjual per toko dan tanggal',
+                      onTap: () => _push(context, const SalesEntryScreen()),
+                    ),
+                    _MenuRow(
+                      icon: Icons.beach_access,
+                      label: 'Cuti',
+                      subtitle: 'ajukan sakit, izin, libur, atau cuti',
+                      onTap: () => _push(context, const LeaveScreen()),
+                    ),
+                    _MenuRow(
+                      icon: Icons.sell,
+                      label: 'Harga',
+                      subtitle: 'laporkan harga rak dan promo di toko',
+                      onTap: () => _push(context, const PricingScreen()),
+                    ),
+                    _MenuRow(
+                      icon: Icons.assignment_ind_outlined,
+                      label: 'Laporan Kehadiran',
+                      subtitle: 'riwayat absensimu',
+                      onTap: () => _push(
+                          context, const AttendanceReportScreen(mine: true)),
+                    ),
+                    _MenuRow(
+                      icon: Icons.summarize,
+                      label: 'Ringkasan Aktivitas',
+                      subtitle: 'angka absen, kunjungan, dan cuti bulan ini',
+                      onTap: () => _push(context, const SummaryScreen()),
+                    ),
+                    if (_isManagerOrAdmin) ...[
+                      _SectionHeader('Alat Manajer'),
+                      _MenuRow(
+                        icon: Icons.auto_awesome,
+                        label: 'Wawasan AI',
+                        subtitle:
+                            'AI membaca penjualan, stok, dan harga lalu menyarankan tindakan',
+                        onTap: () => _push(context, const InsightsScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.store,
+                        label: 'Kelola Toko',
+                        subtitle:
+                            'tambah atau ubah toko, titik lokasi, radius; bisa impor CSV',
+                        onTap: () =>
+                            _push(context, const StoreManagementScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.assignment_ind,
+                        label: 'Penugasan Toko',
+                        subtitle: 'tentukan sales mana memegang toko mana',
+                        onTap: () =>
+                            _push(context, const StoreAssignmentScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.fact_check,
+                        label: 'Tinjau Pengajuan Cuti',
+                        subtitle: 'setujui atau tolak cuti karyawan',
+                        onTap: () => _push(context, const LeaveReviewScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.assessment,
+                        label: 'Laporan Absensi',
+                        subtitle:
+                            'absensi semua karyawan dengan selfie dan lokasi',
+                        onTap: () =>
+                            _push(context, const AttendanceReportScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.map,
+                        label: 'Laporan Kunjungan Toko',
+                        subtitle:
+                            'kunjungan sales, jarak dari toko, di dalam atau luar zona',
+                        onTap: () =>
+                            _push(context, const StoreVisitReportScreen()),
                       ),
                     ],
-                  ),
+                    if (isAdminAccount) ...[
+                      _SectionHeader('Admin'),
+                      _MenuRow(
+                        icon: Icons.person_add,
+                        label: 'Tambah Karyawan',
+                        subtitle: 'buat akun baru dan tentukan perannya',
+                        onTap: () =>
+                            _push(context, const UserManagementScreen()),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                _SectionHeader('Pekerjaanmu'),
-                _MenuRow(
-                  icon: Icons.calendar_today,
-                  label: 'Absensi',
-                  onTap: () => _push(context, const ClockInScreen()),
-                ),
-                _MenuRow(
-                  icon: Icons.storefront,
-                  label: 'Kunjungan Toko',
-                  subtitle: 'termasuk Ketersediaan di Rak',
-                  onTap: () => _push(context, const StoreVisitScreen()),
-                ),
-                _MenuRow(
-                  icon: Icons.photo_camera_back_outlined,
-                  label: 'Cek Rak',
-                  subtitle: 'foto lorong rak, dapat peringatan restok',
-                  onTap: () => _push(context, const ShelfCheckScreen()),
-                ),
-                _MenuRow(
-                  icon: Icons.point_of_sale,
-                  label: 'Input Penjualan',
-                  onTap: () => _push(context, const SalesEntryScreen()),
-                ),
-                _MenuRow(
-                  icon: Icons.beach_access,
-                  label: 'Cuti',
-                  onTap: () => _push(context, const LeaveScreen()),
-                ),
-                _MenuRow(
-                  icon: Icons.sell,
-                  label: 'Harga',
-                  onTap: () => _push(context, const PricingScreen()),
-                ),
-                _MenuRow(
-                  icon: Icons.assignment_ind_outlined,
-                  label: 'Laporan Kehadiran',
-                  subtitle: 'riwayat absensimu',
-                  onTap: () => _push(context, const AttendanceReportScreen(mine: true)),
-                ),
-                _MenuRow(
-                  icon: Icons.summarize,
-                  label: 'Ringkasan Aktivitas',
-                  onTap: () => _push(context, const SummaryScreen()),
-                ),
-                if (_isManagerOrAdmin) ...[
-                  _SectionHeader('Alat Manajer'),
-                  _MenuRow(
-                    icon: Icons.auto_awesome,
-                    label: 'Wawasan AI',
-                    subtitle: 'ringkasan penjualan, stok, dan harga',
-                    onTap: () => _push(context, const InsightsScreen()),
-                  ),
-                  _MenuRow(
-                    icon: Icons.store,
-                    label: 'Kelola Toko',
-                    onTap: () => _push(context, const StoreManagementScreen()),
-                  ),
-                  _MenuRow(
-                    icon: Icons.assignment_ind,
-                    label: 'Penugasan Toko',
-                    onTap: () => _push(context, const StoreAssignmentScreen()),
-                  ),
-                  _MenuRow(
-                    icon: Icons.fact_check,
-                    label: 'Tinjau Pengajuan Cuti',
-                    onTap: () => _push(context, const LeaveReviewScreen()),
-                  ),
-                  _MenuRow(
-                    icon: Icons.assessment,
-                    label: 'Laporan Absensi',
-                    onTap: () => _push(context, const AttendanceReportScreen()),
-                  ),
-                  _MenuRow(
-                    icon: Icons.map,
-                    label: 'Laporan Kunjungan Toko',
-                    onTap: () => _push(context, const StoreVisitReportScreen()),
-                  ),
-                ],
-                if (isAdminAccount) ...[
-                  _SectionHeader('Admin'),
-                  _MenuRow(
-                    icon: Icons.person_add,
-                    label: 'Tambah Karyawan',
-                    onTap: () => _push(context, const UserManagementScreen()),
-                  ),
-                ],
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
-          ),
-        ),
     );
   }
 }
@@ -254,8 +289,10 @@ class _MenuRow extends StatelessWidget {
     final isDisabled = !enabled || onTap == null;
 
     return ListTile(
-      leading: Icon(icon, color: isDisabled ? colorScheme.outline : colorScheme.primary),
-      title: Text(label, style: isDisabled ? TextStyle(color: colorScheme.outline) : null),
+      leading: Icon(icon,
+          color: isDisabled ? colorScheme.outline : colorScheme.primary),
+      title: Text(label,
+          style: isDisabled ? TextStyle(color: colorScheme.outline) : null),
       subtitle: subtitle != null ? Text(subtitle!) : null,
       trailing: isDisabled ? null : const Icon(Icons.chevron_right),
       onTap: isDisabled ? null : onTap,

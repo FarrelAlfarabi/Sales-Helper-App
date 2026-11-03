@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/help.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/supabase_client.dart';
@@ -39,7 +40,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
           .select()
           .order('created_at', ascending: false)
           .limit(1);
-      setState(() => _row = rows.isEmpty ? null : Map<String, dynamic>.from(rows.first));
+      setState(() =>
+          _row = rows.isEmpty ? null : Map<String, dynamic>.from(rows.first));
       await _loadUsage();
     } catch (e) {
       setState(() => _error = 'Gagal memuat: $e');
@@ -50,15 +52,17 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   Future<void> _loadUsage() async {
     try {
-      final rows = await supabase.from('ai_usage').select('cost_usd').limit(10000);
+      final rows =
+          await supabase.from('ai_usage').select('cost_usd').limit(10000);
       var sum = 0.0;
       for (final r in rows) {
         sum += double.tryParse('${r['cost_usd']}') ?? 0;
       }
-      if (mounted) setState(() {
-        _spent = sum;
-        _calls = rows.length;
-      });
+      if (mounted)
+        setState(() {
+          _spent = sum;
+          _calls = rows.length;
+        });
     } catch (_) {
       // Tabel belum ada atau tidak ada akses: kartu kredit disembunyikan.
     }
@@ -70,13 +74,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
       _error = null;
     });
     try {
-      final res = await supabase.functions.invoke('sales-insights', body: {'days': _days});
+      final res = await supabase.functions
+          .invoke('sales-insights', body: {'days': _days});
       final data = res.data as Map<String, dynamic>;
       if (data['error'] != null) throw Exception(data['error']);
       setState(() => _row = Map<String, dynamic>.from(data['insight'] as Map));
       await _loadUsage();
     } on FunctionException catch (e) {
-      setState(() => _error = 'Gagal membuat: ${e.details ?? e.reasonPhrase ?? e.status}');
+      setState(() =>
+          _error = 'Gagal membuat: ${e.details ?? e.reasonPhrase ?? e.status}');
     } catch (e) {
       setState(() => _error = '$e');
     } finally {
@@ -90,10 +96,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final t = Theme.of(context).textTheme;
     final ins = (_row?['insight'] as Map?)?.cast<String, dynamic>();
     List<Map<String, dynamic>> list(String k) =>
-        [...((ins?[k] as List?) ?? const [])].map((e) => e is Map ? e.cast<String, dynamic>() : {'text': '$e'}).toList();
+        [...((ins?[k] as List?) ?? const [])]
+            .map((e) => e is Map ? e.cast<String, dynamic>() : {'text': '$e'})
+            .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Wawasan AI')),
+      appBar: AppBar(
+          title: const Text('Wawasan AI'),
+          actions: const [HelpButton(HelpTopic.insights)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -112,7 +122,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 ]),
                 if (_spent != null) ...[
                   const SizedBox(height: 12),
-                  _CreditCard(budget: _budgetUsd, spent: _spent!, calls: _calls),
+                  _CreditCard(
+                      budget: _budgetUsd, spent: _spent!, calls: _calls),
                 ],
                 const SizedBox(height: 12),
                 FilledButton.icon(
@@ -120,13 +131,19 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   label: Text(_busy ? 'Menganalisis...' : 'Buat wawasan'),
                   onPressed: _busy ? null : _generate,
                 ),
-                if (_busy) const Padding(padding: EdgeInsets.only(top: 12), child: LinearProgressIndicator()),
+                if (_busy)
+                  const Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: LinearProgressIndicator()),
                 if (_error != null)
-                  Padding(padding: const EdgeInsets.only(top: 12), child: Text(_error!, style: TextStyle(color: cs.error))),
+                  Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(_error!, style: TextStyle(color: cs.error))),
                 if (ins == null && _error == null)
                   const Padding(
                     padding: EdgeInsets.only(top: 32),
-                    child: Text('Belum ada wawasan. Buat setelah sales mengisi penjualan, cek rak, dan harga.'),
+                    child: Text(
+                        'Belum ada wawasan. Buat setelah sales mengisi penjualan, cek rak, dan harga.'),
                   ),
                 if (ins != null) ...[
                   const SizedBox(height: 20),
@@ -139,7 +156,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   Text('${ins['headline'] ?? ''}', style: t.titleLarge),
                   _Section('Temuan', [
                     for (final f in list('findings'))
-                      _Item(title: '${f['title'] ?? ''}', body: '${f['detail'] ?? ''}', foot: '${f['evidence'] ?? ''}'),
+                      _Item(
+                          title: '${f['title'] ?? ''}',
+                          body: '${f['detail'] ?? ''}',
+                          foot: '${f['evidence'] ?? ''}'),
                   ]),
                   _Section('Risiko stok habis', [
                     for (final r in list('restock_risks'))
@@ -149,14 +169,25 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         foot: ((r['stores'] as List?) ?? const []).join(', '),
                       ),
                   ]),
-                  _Section('Catatan harga', [for (final p in list('price_notes')) _Item(title: '${p['text'] ?? p}')]),
+                  _Section('Catatan harga', [
+                    for (final p in list('price_notes'))
+                      _Item(title: '${p['text'] ?? p}')
+                  ]),
                   _Section('Tindakan', [
                     for (final a in list('actions'))
-                      _Item(title: '${a['action'] ?? ''}', body: '${a['why'] ?? ''}', foot: 'Untuk: ${a['who'] ?? ''}'),
+                      _Item(
+                          title: '${a['action'] ?? ''}',
+                          body: '${a['why'] ?? ''}',
+                          foot: 'Untuk: ${a['who'] ?? ''}'),
                   ]),
-                  _Section('Data yang kurang', [for (final g in list('data_gaps')) _Item(title: '${g['text'] ?? g}')]),
+                  _Section('Data yang kurang', [
+                    for (final g in list('data_gaps'))
+                      _Item(title: '${g['text'] ?? g}')
+                  ]),
                   const SizedBox(height: 16),
-                  Text('Ringkasan AI dari angka yang diisi di aplikasi. Periksa angka penting sebelum bertindak.', style: t.bodySmall),
+                  Text(
+                      'Ringkasan AI dari angka yang diisi di aplikasi. Periksa angka penting sebelum bertindak.',
+                      style: t.bodySmall),
                 ],
               ],
             ),
@@ -176,7 +207,11 @@ class _Section extends StatelessWidget {
       padding: const EdgeInsets.only(top: 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Text(title, style: Theme.of(context).textTheme.titleSmall), const SizedBox(height: 6), ...items],
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 6),
+          ...items
+        ],
       ),
     );
   }
@@ -199,7 +234,8 @@ class _Item extends StatelessWidget {
           children: [
             Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
             if (body != null && body!.isNotEmpty) Text(body!),
-            if (foot != null && foot!.isNotEmpty) Text(foot!, style: t.bodySmall),
+            if (foot != null && foot!.isNotEmpty)
+              Text(foot!, style: t.bodySmall),
           ],
         ),
       ),
@@ -211,7 +247,8 @@ class _Item extends StatelessWidget {
 /// panggilan AI. Biaya dihitung dari jumlah token di respons API dan harga
 /// per model, jadi ini perkiraan. Saldo resmi ada di console Anthropic.
 class _CreditCard extends StatelessWidget {
-  const _CreditCard({required this.budget, required this.spent, required this.calls});
+  const _CreditCard(
+      {required this.budget, required this.spent, required this.calls});
   final double budget;
   final double spent;
   final int calls;
@@ -227,7 +264,9 @@ class _CreditCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Perkiraan sisa kredit AI', style: t.titleSmall),
           const SizedBox(height: 4),
-          Text('\$${left.toStringAsFixed(2)} dari \$${budget.toStringAsFixed(2)}', style: t.headlineSmall),
+          Text(
+              '\$${left.toStringAsFixed(2)} dari \$${budget.toStringAsFixed(2)}',
+              style: t.headlineSmall),
           const SizedBox(height: 8),
           LinearProgressIndicator(value: frac),
           const SizedBox(height: 8),

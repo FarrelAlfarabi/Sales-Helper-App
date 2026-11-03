@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 
 /// Employee-facing: submit a leave request and see your own request
@@ -16,7 +17,11 @@ class LeaveScreen extends StatefulWidget {
 }
 
 class _LeaveScreenState extends State<LeaveScreen> {
-  static const _statusId = {'pending': 'menunggu', 'approved': 'disetujui', 'rejected': 'ditolak'};
+  static const _statusId = {
+    'pending': 'menunggu',
+    'approved': 'disetujui',
+    'rejected': 'ditolak'
+  };
   static const _typeLabels = {
     'sick': 'Sakit',
     'permit': 'Izin',
@@ -75,7 +80,9 @@ class _LeaveScreenState extends State<LeaveScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cuti')),
+      appBar: AppBar(
+          title: const Text('Cuti'),
+          actions: const [HelpButton(HelpTopic.leave)]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openRequestForm,
         icon: const Icon(Icons.add),
@@ -89,7 +96,9 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(_error!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
                   if (_requests.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
@@ -161,7 +170,8 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
       return;
     }
     if (_end!.isBefore(_start!)) {
-      setState(() => _error = 'Tanggal selesai tidak boleh sebelum tanggal mulai.');
+      setState(
+          () => _error = 'Tanggal selesai tidak boleh sebelum tanggal mulai.');
       return;
     }
 
@@ -179,7 +189,9 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
         'leave_type': _type,
         'start_date': fmt(_start!),
         'end_date': fmt(_end!),
-        'reason': _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim(),
+        'reason': _reasonController.text.trim().isEmpty
+            ? null
+            : _reasonController.text.trim(),
       });
 
       if (mounted) Navigator.of(context).pop(true);
@@ -203,7 +215,8 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Pengajuan Cuti Baru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Pengajuan Cuti Baru',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _type,
@@ -219,13 +232,17 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
           const SizedBox(height: 12),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(_start == null ? 'Tanggal mulai' : _start.toString().split(' ').first),
+            title: Text(_start == null
+                ? 'Tanggal mulai'
+                : _start.toString().split(' ').first),
             trailing: const Icon(Icons.calendar_today),
             onTap: () => _pickDate(isStart: true),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(_end == null ? 'Tanggal selesai' : _end.toString().split(' ').first),
+            title: Text(_end == null
+                ? 'Tanggal selesai'
+                : _end.toString().split(' ').first),
             trailing: const Icon(Icons.calendar_today),
             onTap: () => _pickDate(isStart: false),
           ),
@@ -236,7 +253,8 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            Text(_error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ],
           const SizedBox(height: 16),
           FilledButton(

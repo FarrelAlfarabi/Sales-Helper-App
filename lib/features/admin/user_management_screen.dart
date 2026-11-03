@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 
 /// Create new employee accounts. Only reachable from the home screen's
@@ -74,7 +75,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     } on FunctionException catch (e) {
       final details = e.details;
       final message = details is Map ? details['error'] : e.reasonPhrase;
-      setState(() => _error = message?.toString() ?? 'Permintaan gagal (${e.status}).');
+      setState(() =>
+          _error = message?.toString() ?? 'Permintaan gagal (${e.status}).');
     } catch (e) {
       setState(() => _error = '$e');
     } finally {
@@ -85,7 +87,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah Karyawan')),
+      appBar: AppBar(
+          title: const Text('Tambah Karyawan'),
+          actions: const [HelpButton(HelpTopic.addUser)]),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -95,20 +99,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               TextFormField(
                 controller: _fullNameController,
                 decoration: const InputDecoration(labelText: 'Nama lengkap'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Kata sandi sementara',
-                  helperText: 'Minimal 8 karakter. Berikan langsung kepada karyawan.',
+                  helperText:
+                      'Minimal 8 karakter. Berikan langsung kepada karyawan.',
                 ),
                 validator: (v) =>
                     (v == null || v.length < 8) ? 'Minimal 8 karakter' : null,
@@ -118,7 +125,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 initialValue: _role,
                 decoration: const InputDecoration(labelText: 'Peran'),
                 items: const [
-                  DropdownMenuItem(value: 'field_rep', child: Text('Sales Lapangan')),
+                  DropdownMenuItem(
+                      value: 'field_rep', child: Text('Sales Lapangan')),
                   DropdownMenuItem(value: 'manager', child: Text('Manajer')),
                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
                 ],
@@ -126,11 +134,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 16),
-                Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                Text(_error!,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
               ],
               if (_successMessage != null) ...[
                 const SizedBox(height: 16),
-                Text(_successMessage!, style: const TextStyle(color: Colors.green)),
+                Text(_successMessage!,
+                    style: const TextStyle(color: Colors.green)),
               ],
               const SizedBox(height: 24),
               FilledButton(

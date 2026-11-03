@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/help.dart';
 import '../../core/supabase_client.dart';
 
 /// Manager/admin: review pending leave requests from all employees.
@@ -33,7 +34,8 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
     try {
       final rows = await supabase
           .from('leave_requests')
-          .select('id, leave_type, start_date, end_date, reason, employee_id, profiles!leave_requests_employee_id_fkey(full_name)')
+          .select(
+              'id, leave_type, start_date, end_date, reason, employee_id, profiles!leave_requests_employee_id_fkey(full_name)')
           .eq('status', 'pending')
           .order('start_date');
       setState(() => _pending = List<Map<String, dynamic>>.from(rows));
@@ -60,7 +62,9 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pengajuan Cuti')),
+      appBar: AppBar(
+          title: const Text('Pengajuan Cuti'),
+          actions: const [HelpButton(HelpTopic.leaveReview)]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -69,11 +73,14 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_error != null)
-                    Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    Text(_error!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
                   if (_pending.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 32),
-                      child: Center(child: Text('Tidak ada pengajuan tertunda.')),
+                      child:
+                          Center(child: Text('Tidak ada pengajuan tertunda.')),
                     ),
                   for (final r in _pending)
                     Card(
@@ -90,12 +97,15 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.check_circle, color: Colors.green),
-                              onPressed: () => _review(r['id'] as String, 'approved'),
+                              icon: const Icon(Icons.check_circle,
+                                  color: Colors.green),
+                              onPressed: () =>
+                                  _review(r['id'] as String, 'approved'),
                             ),
                             IconButton(
                               icon: const Icon(Icons.cancel, color: Colors.red),
-                              onPressed: () => _review(r['id'] as String, 'rejected'),
+                              onPressed: () =>
+                                  _review(r['id'] as String, 'rejected'),
                             ),
                           ],
                         ),
