@@ -64,7 +64,9 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Pengajuan Cuti'),
-          actions: const [HelpButton(HelpTopic.leaveReview)]),
+          actions: const [HelpButton(HelpTopic.leaveReview)],
+        bottom: const HelpBar(HelpTopic.leaveReview),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

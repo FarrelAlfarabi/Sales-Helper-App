@@ -89,7 +89,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Tambah Karyawan'),
-          actions: const [HelpButton(HelpTopic.addUser)]),
+          actions: const [HelpButton(HelpTopic.addUser)],
+        bottom: const HelpBar(HelpTopic.addUser),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(

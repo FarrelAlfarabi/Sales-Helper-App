@@ -100,7 +100,9 @@ class _PricingScreenState extends State<PricingScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Harga'),
-          actions: const [HelpButton(HelpTopic.pricing)]),
+          actions: const [HelpButton(HelpTopic.pricing)],
+        bottom: const HelpBar(HelpTopic.pricing),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

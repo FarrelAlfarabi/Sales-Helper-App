@@ -114,7 +114,9 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Cek Rak'),
-          actions: const [HelpButton(HelpTopic.shelfCheck)]),
+          actions: const [HelpButton(HelpTopic.shelfCheck)],
+        bottom: const HelpBar(HelpTopic.shelfCheck),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

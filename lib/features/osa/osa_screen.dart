@@ -71,7 +71,9 @@ class _OsaScreenState extends State<OsaScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Ketersediaan di Rak'),
-          actions: const [HelpButton(HelpTopic.osa)]),
+          actions: const [HelpButton(HelpTopic.osa)],
+        bottom: const HelpBar(HelpTopic.osa),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

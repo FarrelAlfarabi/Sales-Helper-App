@@ -82,7 +82,9 @@ class _LeaveScreenState extends State<LeaveScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Cuti'),
-          actions: const [HelpButton(HelpTopic.leave)]),
+          actions: const [HelpButton(HelpTopic.leave)],
+        bottom: const HelpBar(HelpTopic.leave),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openRequestForm,
         icon: const Icon(Icons.add),

@@ -106,7 +106,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Input Penjualan'),
-          actions: const [HelpButton(HelpTopic.sales)]),
+          actions: const [HelpButton(HelpTopic.sales)],
+        bottom: const HelpBar(HelpTopic.sales),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

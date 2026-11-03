@@ -343,6 +343,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
         actions: [
           HelpButton(_isStores ? HelpTopic.csvStores : HelpTopic.csvAssignments)
         ],
+        bottom: HelpBar(_isStores ? HelpTopic.csvStores : HelpTopic.csvAssignments),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

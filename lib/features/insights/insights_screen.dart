@@ -103,7 +103,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Wawasan AI'),
-          actions: const [HelpButton(HelpTopic.insights)]),
+          actions: const [HelpButton(HelpTopic.insights)],
+        bottom: const HelpBar(HelpTopic.insights),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

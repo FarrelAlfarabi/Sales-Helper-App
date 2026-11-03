@@ -77,7 +77,9 @@ class _SummaryScreenState extends State<SummaryScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Ringkasan Aktivitas'),
-          actions: const [HelpButton(HelpTopic.summary)]),
+          actions: const [HelpButton(HelpTopic.summary)],
+        bottom: const HelpBar(HelpTopic.summary),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

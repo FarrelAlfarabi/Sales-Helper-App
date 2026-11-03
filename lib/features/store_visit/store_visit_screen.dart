@@ -148,7 +148,9 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Kunjungan Toko'),
-          actions: const [HelpButton(HelpTopic.storeVisit)]),
+          actions: const [HelpButton(HelpTopic.storeVisit)],
+        bottom: const HelpBar(HelpTopic.storeVisit),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _assignedStores.isEmpty

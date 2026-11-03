@@ -61,7 +61,9 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Laporan Kunjungan Toko'),
-          actions: const [HelpButton(HelpTopic.visitReport)]),
+          actions: const [HelpButton(HelpTopic.visitReport)],
+        bottom: const HelpBar(HelpTopic.visitReport),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

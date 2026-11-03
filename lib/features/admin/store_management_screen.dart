@@ -73,6 +73,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
             },
           ),
         ],
+        bottom: const HelpBar(HelpTopic.stores),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddStoreForm,

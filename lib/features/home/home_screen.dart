@@ -89,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => supabase.auth.signOut(),
           ),
         ],
+        bottom: const HelpBar(HelpTopic.guide),
       ),
       body: _loadingRole
           ? const Center(child: CircularProgressIndicator())

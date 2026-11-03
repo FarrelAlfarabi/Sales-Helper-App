@@ -175,7 +175,9 @@ class _ClockInScreenState extends State<ClockInScreen> {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Absensi'),
-          actions: const [HelpButton(HelpTopic.attendance)]),
+          actions: const [HelpButton(HelpTopic.attendance)],
+        bottom: const HelpBar(HelpTopic.attendance),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Padding(

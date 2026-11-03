@@ -115,6 +115,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
             },
           ),
         ],
+        bottom: const HelpBar(HelpTopic.assignments),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

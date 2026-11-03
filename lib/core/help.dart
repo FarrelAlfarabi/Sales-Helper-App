@@ -278,6 +278,69 @@ const _contents = <HelpTopic, HelpContent>{
   ),
 };
 
+/// Satu kalimat sederhana yang tampil langsung di bawah judul layar.
+const _quick = <HelpTopic, String>{
+  HelpTopic.guide: 'Buka menu sesuai tugasmu. Ketuk ? di layar mana pun untuk penjelasan.',
+  HelpTopic.attendance: 'Ketuk Absen Masuk lalu selfie. Pulang kerja, ketuk Absen Pulang lalu selfie.',
+  HelpTopic.storeVisit: 'Pilih toko, ketuk check-in, foto tampak toko. Lalu foto tiap display.',
+  HelpTopic.osa: 'Ketuk tiap lokasi pajang, foto displaynya, lalu ketuk Selesai.',
+  HelpTopic.shelfCheck: 'Pilih toko, foto satu lorong rak. AI memberi daftar yang perlu direstok.',
+  HelpTopic.sales: 'Pilih toko, isi nama produk dan jumlah unit terjual, lalu simpan.',
+  HelpTopic.leave: 'Pilih jenis dan tanggal, tulis alasan, kirim. Tunggu manajer menyetujui.',
+  HelpTopic.pricing: 'Pilih toko, isi nama produk dan harga di rak, centang bila promo, simpan.',
+  HelpTopic.myAttendance: 'Daftar absensimu. Ketuk satu baris untuk melihat foto dan lokasi.',
+  HelpTopic.summary: 'Angka absen, kunjungan, dan cutimu bulan ini.',
+  HelpTopic.insights: 'Pilih periode, ketuk tombol buat wawasan. AI menulis ringkasan dan saran tindakan.',
+  HelpTopic.stores: 'Tambah toko dan atur radius zonanya. Banyak toko sekaligus: ikon unggah.',
+  HelpTopic.assignments: 'Pilih sales dan toko untuk menugaskan. Banyak sekaligus: ikon unggah.',
+  HelpTopic.leaveReview: 'Buka pengajuan, baca alasannya, lalu setujui atau tolak.',
+  HelpTopic.attendanceAll: 'Absensi semua karyawan. Ketuk satu baris untuk melihat selfie dan lokasi.',
+  HelpTopic.visitReport: 'Semua kunjungan sales. Cari yang bertanda di luar zona.',
+  HelpTopic.addUser: 'Isi nama, email, kata sandi awal, dan peran. Minta orangnya segera ganti kata sandi.',
+  HelpTopic.csvStores: 'Ketuk Salin contoh, isi di spreadsheet, simpan CSV, lalu pilih file di sini.',
+  HelpTopic.csvAssignments: 'Ketuk Salin contoh, isi email sales dan kode toko, simpan CSV, pilih file.',
+};
+
+/// Strip petunjuk singkat di bawah judul layar. Ketuk untuk detail lengkap.
+class HelpBar extends StatelessWidget implements PreferredSizeWidget {
+  const HelpBar(this.topic, {super.key});
+  final HelpTopic topic;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(56);
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.primaryContainer.withAlpha(90),
+      child: InkWell(
+        onTap: () => showHelpSheet(context, topic),
+        child: SizedBox(
+          height: 56,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(children: [
+              Icon(Icons.lightbulb_outline, size: 20, color: cs.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _quick[topic]!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('Detail', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary)),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 HelpContent helpFor(HelpTopic t) => _contents[t]!;
 
 class HelpButton extends StatelessWidget {

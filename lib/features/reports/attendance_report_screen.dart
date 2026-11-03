@@ -97,6 +97,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
           HelpButton(
               widget.mine ? HelpTopic.myAttendance : HelpTopic.attendanceAll),
         ],
+        bottom: HelpBar(widget.mine ? HelpTopic.myAttendance : HelpTopic.attendanceAll),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
