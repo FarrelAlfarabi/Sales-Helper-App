@@ -19,8 +19,8 @@ begin
   set local role authenticated;
 
   -- insert tries to backdate clock-in: must be forced to now()
-  insert into public.attendance_records(employee_id, clock_in_at, clock_in_latitude, clock_in_longitude)
-    values (v_rep, now() - interval '5 hours', -6.2, 106.8) returning id into v_att;
+  insert into public.attendance_records(employee_id, clock_in_at, clock_in_latitude, clock_in_longitude, clock_in_selfie_url)
+    values (v_rep, now() - interval '5 hours', -6.2, 106.8, 'test') returning id into v_att;
   assert (select clock_in_at from public.attendance_records where id = v_att) > now() - interval '1 minute',
     'FAIL: backdated clock-in was kept';
 
@@ -61,6 +61,7 @@ begin
 
   -- rep cannot reactivate themselves
   reset role;
+  perform set_config('request.jwt.claims', '', true);
   update public.profiles set is_active = false where id = v_rep;
   perform set_config('request.jwt.claims', json_build_object('sub', v_rep, 'role', 'authenticated')::text, true);
   set local role authenticated;
@@ -72,7 +73,7 @@ begin
   end;
   -- deactivated rep cannot clock in
   begin
-    insert into public.attendance_records(employee_id, clock_in_latitude, clock_in_longitude) values (v_rep, 0, 0);
+    insert into public.attendance_records(employee_id, clock_in_latitude, clock_in_longitude, clock_in_selfie_url) values (v_rep, 0, 0, 'test');
     raise exception 'FAIL: deactivated rep clocked in';
   exception when insufficient_privilege then null; end;
 
