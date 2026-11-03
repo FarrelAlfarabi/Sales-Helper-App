@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/supabase_client.dart';
+import 'csv_import_screen.dart';
 
 /// Manager/admin: list stores and add new ones.
 ///
@@ -56,7 +57,19 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Toko')),
+      appBar: AppBar(
+        title: const Text('Toko'),
+        actions: [
+          IconButton(
+            tooltip: 'Impor dari CSV',
+            icon: const Icon(Icons.upload_file),
+            onPressed: () async {
+              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CsvImportScreen(kind: CsvImportKind.stores)));
+              _load();
+            },
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddStoreForm,
         icon: const Icon(Icons.add),

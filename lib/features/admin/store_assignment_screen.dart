@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/supabase_client.dart';
+import 'csv_import_screen.dart';
 
 /// Manager/admin: assign an employee to a store, and see/deactivate
 /// existing assignments.
@@ -43,7 +44,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
       final stores = await supabase.from('stores').select('id, name, code').order('name');
       final assignments = await supabase
           .from('store_assignments')
-          .select('id, is_active, profiles(full_name), stores(name, code)')
+          .select('id, is_active, profiles!store_assignments_employee_id_fkey(full_name), stores(name, code)')
           .eq('is_active', true);
 
       setState(() {
@@ -94,7 +95,19 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Penugasan Toko')),
+      appBar: AppBar(
+        title: const Text('Penugasan Toko'),
+        actions: [
+          IconButton(
+            tooltip: 'Impor dari CSV',
+            icon: const Icon(Icons.upload_file),
+            onPressed: () async {
+              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CsvImportScreen(kind: CsvImportKind.assignments)));
+              _load();
+            },
+          ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

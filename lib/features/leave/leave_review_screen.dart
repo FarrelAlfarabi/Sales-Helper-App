@@ -33,7 +33,7 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
     try {
       final rows = await supabase
           .from('leave_requests')
-          .select('id, leave_type, start_date, end_date, reason, employee_id, profiles(full_name)')
+          .select('id, leave_type, start_date, end_date, reason, employee_id, profiles!leave_requests_employee_id_fkey(full_name)')
           .eq('status', 'pending')
           .order('start_date');
       setState(() => _pending = List<Map<String, dynamic>>.from(rows));
