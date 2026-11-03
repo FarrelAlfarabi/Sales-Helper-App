@@ -15,6 +15,7 @@ import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
+import '../shell/desktop_shell.dart';
 import '../summary/summary_screen.dart';
 
 // Gates the "Tambah Karyawan" tile specifically to this one account, per an
@@ -77,6 +78,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final email = supabase.auth.currentUser?.email ?? '';
     final isAdminAccount = email.toLowerCase() == _kAdminEmail;
+
+    // Layar lebar (laptop): sidebar + lembar kerja. Ponsel tetap memakai menu di bawah.
+    if (!_loadingRole && MediaQuery.of(context).size.width >= 900) {
+      return DesktopShell(
+        isManager: _isManagerOrAdmin,
+        isAdminAccount: isAdminAccount,
+        name: (_fullName != null && _fullName!.isNotEmpty) ? _fullName! : email,
+        roleLabel: isAdminAccount ? 'Admin' : (_isManagerOrAdmin ? 'Manajer' : 'Sales'),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
