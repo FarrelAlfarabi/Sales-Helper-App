@@ -111,7 +111,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Row(children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
                   SegmentedButton<int>(
                     segments: const [
                       ButtonSegment(value: 7, label: Text('7 hari')),
@@ -122,6 +124,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     onSelectionChanged: (s) => setState(() => _days = s.first),
                   ),
                 ]),
+                ),
                 if (_spent != null) ...[
                   const SizedBox(height: 12),
                   _CreditCard(
