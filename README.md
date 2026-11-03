@@ -1,68 +1,79 @@
 # Zonein
 
-Field-force attendance, geofenced store visits, and on-shelf availability
-reporting for PT. Logic Soft Computer. Flutter app + Supabase backend.
+Field-sales app for PT. Logic Soft Computer: attendance with selfie and GPS,
+store visits checked against a store zone, shelf photos, sales and price
+reports, leave requests, and AI insights for managers. Flutter (web first)
+on a Supabase backend. All text inside the app is Indonesian.
 
-See `PROJECT_NOTES.md` for the running build log, scope decisions, and
-known gaps. See `docs/WALKTHROUGH.md` for a client-facing feature
-walkthrough.
+## Roles
 
-## Status
+- **Sales (field_rep):** sees only their own data and their assigned stores.
+- **Manager:** also sees everyone's data, manages stores and assignments, reviews leave, uses AI insights.
+- **Admin:** same as manager. Only the account set in `home_screen.dart` (`_kAdminEmail`) sees "Tambah Karyawan".
 
-Schema and RLS policies are live on Supabase. The `lib/` Dart source is
-written but **has not been compiled or run** -- this repo was built in an
-environment with no Flutter SDK installed, so `flutter analyze` / `flutter
-run` have not been executed. Treat the app code as a first draft that
-needs a real build-and-run pass before it's trusted.
+Attendance and visit rules, and what is not enforced, are in
+[docs/ATTENDANCE_AND_FEATURES.md](docs/ATTENDANCE_AND_FEATURES.md).
 
-## Backend (Supabase)
+## Repo layout
 
-- Project: `zonein`, ref `eucnjnsqmpwiwkupnxku`, region `ap-southeast-1`.
-- URL: `https://eucnjnsqmpwiwkupnxku.supabase.co`
-- Publishable key (safe to embed client-side):
-  `sb_publishable_dSGk6pG_mIv2wsMeGbu5Kw_JPWo0Ldl`
-- Migrations live in `supabase/migrations/`, applied directly to the live
-  project (see PROJECT_NOTES.md for how each was verified).
+| Path | What it is |
+| --- | --- |
+| `lib/` | Flutter app (`core/`, `features/`) |
+| `web/` | Web shell: `index.html` (loader and error screen), `vercel.json` (cache headers, SPA rewrite) |
+| `supabase/migrations/` | Database schema, RLS policies, storage buckets, RPCs |
+| `supabase/functions/` | Edge functions: `shelf-check`, `sales-insights`, `admin-create-user` (shared code in `_shared/`) |
+| `demo/` | Static clickable demo, deployed separately |
+| `assets/google_fonts/` | Bundled Public Sans (app does not fetch fonts at runtime) |
+| `docs/` | Feature notes and walkthrough |
+| `PROJECT_NOTES.md` | Build log and decisions |
 
-### First admin/manager account
+## Configuration (names only, never commit values)
 
-Self-signup is disabled by design (see PROJECT_NOTES.md). To create the
-first account:
+App, passed at build or run time with `--dart-define`:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY` (the publishable key from the Supabase dashboard)
 
-1. Supabase Dashboard -> Authentication -> Add user (or the Admin API),
-   with `full_name` and `role` in the user's metadata.
-2. If you didn't set `role` in metadata, promote manually:
-   ```sql
-   update public.profiles set role = 'admin' where id = '<user-uuid>';
-   ```
+Edge functions, set as Supabase secrets:
+- `ANTHROPIC_API_KEY`
+- `ANTHROPIC_MODEL` (optional)
+- `ADMIN_EMAIL` (used by `admin-create-user`)
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` are provided by Supabase
 
-## Frontend (Flutter)
+Never put the service role key or the Anthropic key in the app or in git.
 
-This repo currently has `pubspec.yaml` and `lib/` but no generated native
-platform folders (`android/`, `ios/`, `web/`) -- those need to be generated
-locally with a real Flutter SDK, which this build environment did not have:
+## Run locally
 
 ```bash
-flutter create --org com.logicsoft.zonein --platforms=android,ios,web .
 flutter pub get
+flutter run -d chrome \
+  --dart-define=SUPABASE_URL=<your-url> \
+  --dart-define=SUPABASE_ANON_KEY=<your-publishable-key>
 ```
 
-That will scaffold `android/`, `ios/`, `web/` alongside the existing
-`lib/` and `pubspec.yaml` without overwriting them.
+Android and iOS folders are not committed. Generate them with
+`flutter create --org com.logicsoft.zonein --platforms=android,ios .` and add
+camera and location permissions before building for phones.
 
-Then run against the live Supabase project:
+## Backend
 
-```bash
-flutter run \
-  --dart-define=SUPABASE_URL=https://eucnjnsqmpwiwkupnxku.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=sb_publishable_dSGk6pG_mIv2wsMeGbu5Kw_JPWo0Ldl
-```
+Apply the files in `supabase/migrations/` in order, then deploy the functions in
+`supabase/functions/`. Self sign-up is off. Accounts are created by an admin.
 
-Required device permissions (added when you run `flutter create`, but
-double-check against the actual generated manifest -- unverified in this
-environment):
+## Deploy (web)
 
-- Android: `CAMERA`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` in
-  `android/app/src/main/AndroidManifest.xml`.
-- iOS: `NSCameraUsageDescription`, `NSLocationWhenInUseUsageDescription` in
-  `ios/Runner/Info.plist`.
+1. Build:
+   ```bash
+   flutter build web --release --no-web-resources-cdn \
+     --dart-define=SUPABASE_URL=<your-url> --dart-define=SUPABASE_ANON_KEY=<your-publishable-key>
+   ```
+2. Version the app code file for long caching: in `build/web/flutter_bootstrap.js`
+   change `"mainJsPath":"main.dart.js"` to `"mainJsPath":"main.dart.js?v=<first 10 chars of sha1 of main.dart.js>"`.
+3. Copy `web/vercel.json` into `build/web/`.
+4. Commit the contents of `build/web/` to the `web-build` branch (an orphan branch holding only build output) and
+   deploy that branch with Vercel (project `zonein-app`). The `demo/` folder deploys as its own Vercel project.
+
+`web-build` is generated output. Do not edit it by hand and do not merge it into `main`.
+
+## Known gaps
+
+See "Known gaps" in `docs/ATTENDANCE_AND_FEATURES.md` and `PROJECT_NOTES.md`.
