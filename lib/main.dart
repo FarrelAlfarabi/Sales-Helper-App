@@ -35,6 +35,24 @@ class ZoneinApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      builder: (context, child) {
+        // Wide screens (laptop): pale canvas with the app as a white work sheet.
+        final w = MediaQuery.of(context).size.width;
+        if (w < 900 || child == null) return child ?? const SizedBox.shrink();
+        final dark = Theme.of(context).brightness == Brightness.dark;
+        return ColoredBox(
+          color: dark ? const Color(0xFF0A100E) : AppTheme.tint,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: ClipRRect(borderRadius: BorderRadius.circular(16), child: child),
+              ),
+            ),
+          ),
+        );
+      },
       home: const BootGate(),
     );
   }

@@ -101,30 +101,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundColor: colorScheme.primaryContainer,
-                            child: Icon(Icons.person,
-                                color: colorScheme.onPrimaryContainer),
-                          ),
-                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('Halo,',
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(color: colorScheme.onSurfaceVariant)),
                                 Text(
                                   (_fullName != null && _fullName!.isNotEmpty)
                                       ? _fullName!
                                       : email,
-                                  style: Theme.of(context).textTheme.titleSmall,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                            child: Text(
+                              isAdminAccount ? 'Admin' : (_isManagerOrAdmin ? 'Manajer' : 'Sales'),
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: colorScheme.primary, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
@@ -257,12 +267,12 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Text(
-        title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
-              letterSpacing: 0.8,
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
       ),
     );
@@ -275,28 +285,59 @@ class _MenuRow extends StatelessWidget {
     required this.label,
     this.subtitle,
     this.onTap,
-    this.enabled = true,
   });
 
   final IconData icon;
   final String label;
   final String? subtitle;
   final VoidCallback? onTap;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDisabled = !enabled || onTap == null;
-
-    return ListTile(
-      leading: Icon(icon,
-          color: isDisabled ? colorScheme.outline : colorScheme.primary),
-      title: Text(label,
-          style: isDisabled ? TextStyle(color: colorScheme.outline) : null),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      trailing: isDisabled ? null : const Icon(Icons.chevron_right),
-      onTap: isDisabled ? null : onTap,
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Material(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, size: 22, color: cs.primary),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label, style: t.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                      if (subtitle != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(subtitle!,
+                              style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
