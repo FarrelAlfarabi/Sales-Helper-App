@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +11,8 @@ import 'features/home/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // IBM Plex Sans is bundled in assets/google_fonts, so never fetch it at runtime.
+  GoogleFonts.config.allowRuntimeFetching = false;
   Intl.defaultLocale = 'id';
   await initializeDateFormatting('id');
   // Supabase init used to be awaited here, before runApp() -- meaning

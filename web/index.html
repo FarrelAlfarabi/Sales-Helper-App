@@ -29,6 +29,9 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
+  <link rel="preconnect" href="https://eucnjnsqmpwiwkupnxku.supabase.co" crossorigin>
+  <link rel="preload" href="canvaskit/chromium/canvaskit.wasm" as="fetch" type="application/wasm" crossorigin>
+  <style>@keyframes zspin{to{transform:rotate(360deg)}}</style>
   <title>zonein</title>
   <link rel="manifest" href="manifest.json">
 </head>
@@ -41,7 +44,7 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <div id="boot" style="font-family:system-ui,sans-serif;text-align:center;padding:48px 16px;color:#52635b">Memuat Zonein...</div>
+  <div id="boot" style="font-family:system-ui,sans-serif;text-align:center;padding:48px 16px;color:#52635b"><div style="width:28px;height:28px;margin:0 auto 12px;border:3px solid #d3ddd8;border-top-color:#0a8f6b;border-radius:50%;animation:zspin .8s linear infinite"></div>Memuat Zonein... (pertama kali bisa beberapa detik)</div>
   <script>
     // Visible diagnostics: a bare white screen tells nobody anything.
     function bootFail(m){var b=document.getElementById('boot');if(b){b.style.color='#b3261e';b.innerText='Zonein gagal dimuat: '+m+'. Coba Chrome terbaru atau buka di browser biasa (bukan pratinjau dalam aplikasi).';}}
