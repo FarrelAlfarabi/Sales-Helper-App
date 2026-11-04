@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pratinjau Desain Zonein</title>
+<title>Zonein - Aplikasi Sales Lapangan</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -101,21 +101,46 @@ tr.sel td{background:var(--soft)}
 .lc .wm{padding:0 0 4px;font-size:26px}
 .bar2{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.bar2 i{display:block;height:100%;background:var(--br)}
 @media (prefers-reduced-motion:no-preference){.group button,.chips button{transition:background .15s}}
+.hero{max-width:1100px;margin:28px auto 8px;padding:40px 32px;border-radius:20px;background:linear-gradient(135deg,#0a8f6b,#0b6e56 60%,#14211c);color:#fff}
+.hero .eyebrow{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.16);padding:4px 12px;border-radius:99px}
+.hero h2{font-size:clamp(26px,4.2vw,42px);line-height:1.15;margin:16px 0 12px;font-weight:600;max-width:20ch}
+.hero p{font-size:17px;max-width:56ch;margin:0 0 22px;opacity:.92}
+.hero .feats{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.hero .feats li{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 16px}
+.hero .feats b{display:block;font-weight:600;margin-bottom:2px}.hero .feats span{font-size:13px;opacity:.85}
+.hero .cta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.hero .cta a{min-height:46px;padding:0 22px;border-radius:10px;display:inline-grid;place-items:center;font-weight:600;text-decoration:none}
+.hero .go{background:#fff;color:#0a6e56}.hero .alt{border:1px solid rgba(255,255,255,.6);color:#fff}
+.hero small{opacity:.75}
+.pframe{box-shadow:0 24px 60px rgba(10,60,45,.28)}
+html{scroll-behavior:smooth}
 </style>
 
 </head>
 <body>
-<div class="notice">Pratinjau desain dengan data contoh. Semua nama, angka, foto, dan hasil AI di layar ini hanya [contoh], bukan data asli. Tampilan ponsel bisa diklik.</div>
+<section class="hero">
+  <span class="eyebrow">Aplikasi sales lapangan</span>
+  <h2>Tahu apa yang terjadi di setiap toko, tanpa harus ada di sana.</h2>
+  <p>Zonein membantu tim sales mencatat kehadiran, kunjungan, dan kondisi rak, lalu merangkumnya untuk manajer secara otomatis.</p>
+  <ul class="feats">
+    <li><b>Absensi selfie dan GPS</b><span>Bukti hadir yang sulit dipalsukan.</span></li>
+    <li><b>Kunjungan terverifikasi</b><span>Server memeriksa posisi terhadap zona toko.</span></li>
+    <li><b>Cek rak dengan AI</b><span>Satu foto jadi daftar tindakan restok.</span></li>
+    <li><b>Dasbor manajer</b><span>Kehadiran, kunjungan, dan penjualan satu layar.</span></li>
+  </ul>
+  <div class="cta"><a class="go" href="#demo">Coba pratinjau</a><a class="alt" href="mailto:businessbigma@gmail.com?subject=Tanya%20Zonein">Hubungi Bigma</a></div>
+  <small>Pratinjau interaktif dengan data contoh. Klik layar di bawah untuk mencoba.</small>
+</section>
 
 <header class="bar">
-  <h1>Zonein desain A, semua fitur</h1>
+  <h1>Zonein <span style="font-weight:400;color:var(--muted)">pratinjau interaktif</span></h1>
   <div class="group" role="group" aria-label="Preview type" id="views">
     <button data-v="phone" aria-pressed="true">Ponsel</button>
     <button data-v="desk" aria-pressed="false">Desktop 16:10</button>
   </div>
 </header>
 
-<div class="wrap">
+<div class="wrap" id="demo">
   <div id="phoneView">
     <div class="idx" id="idx"></div>
     <div class="pframe"><div id="pscreen" class="ab"></div></div>
