@@ -8,7 +8,6 @@ import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
-import '../insights/insights_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../sales/sales_entry_screen.dart';
@@ -206,13 +205,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     if (_isManagerOrAdmin) ...[
                       _SectionHeader('Alat Manajer'),
-                      _MenuRow(
-                        icon: Icons.auto_awesome,
-                        label: 'Wawasan AI',
-                        subtitle:
-                            'AI membaca penjualan, stok, dan harga lalu menyarankan tindakan',
-                        onTap: () => _push(context, const InsightsScreen()),
-                      ),
                       _MenuRow(
                         icon: Icons.store,
                         label: 'Kelola Toko',
