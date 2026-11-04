@@ -4,273 +4,181 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Zonein - Aplikasi Sales Lapangan</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<meta name="description" content="Zonein membantu tim sales lapangan mencatat kehadiran, kunjungan toko, dan kondisi rak, lalu merangkumnya untuk manajer.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: sticky controls; Phone = one clickable 360x720 prototype with a screen index; Desktop = manager dashboard on a 1280x800 (16:10) board scaled to fit. Design A "Quiet Ledger": IBM Plex Sans, flat bordered cards, brand green. */
-:root{--bg:#eef2f0;--fg:#14211c;--muted:#52635b;--line:#d3ddd8;--card:#ffffff;--brand:#0a8f6b;--on-brand:#ffffff;--bar:#ffffff;--ring:#0a8f6b}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1714;--fg:#e8f1ed;--muted:#9bb0a7;--line:#2a3a33;--card:#17221e;--bar:#17221e;--brand:#2fc79b;--on-brand:#06201a;--ring:#2fc79b;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0f1714;--fg:#e8f1ed;--muted:#9bb0a7;--line:#2a3a33;--card:#17221e;--bar:#17221e;--brand:#2fc79b;--on-brand:#06201a;--ring:#2fc79b;color-scheme:dark}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:10}
-.notice{margin:16px auto 0;max-width:1280px;font-size:13px;color:var(--muted)}
-header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bar);border-bottom:1px solid var(--line);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
-.bar h1{font-size:17px;margin:0;font-weight:600;margin-right:auto}
-.group{display:flex;gap:6px;flex-wrap:wrap}
-.group button,.chips button{min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-weight:500;cursor:pointer}
-.group button[aria-pressed="true"],.chips button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
-button:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
-.wrap{max-width:1280px;margin:18px auto 0}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.chips .lbl{align-self:center;font-size:13px;color:var(--muted);margin-right:4px}
-#phoneView{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
-.idx{flex:1 1 260px;max-width:380px}
-.idx h2{font-size:15px;margin:0 0 6px}
-.idx .grp{margin-bottom:14px}
-.idx .grp b{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px}
-.pframe{width:378px;max-width:100%;height:738px;border:9px solid #1b1f1d;border-radius:36px;background:#1b1f1d;overflow:hidden;position:relative;flex:none}
-#pscreen{position:absolute;inset:0;overflow:auto}
-.fit{position:relative;width:100%;overflow:hidden;border-radius:10px;border:1px solid var(--line)}
-.board{position:absolute;left:0;top:0;width:1280px;height:800px;transform-origin:0 0;overflow:hidden}
-[hidden]{display:none!important}
-
-/* ===== artboard tokens (phone + desktop share) ===== */
-.ab{--ink:#14211c;--mut:#5a6b63;--ln:#d9e2de;--sf:#f6f8f7;--br:#0a8f6b;--soft:#e3f1eb;--warn:#b45309;--warnbg:#fdecd2;--bad:#b3261e;--badbg:#fbe3e0;--m-bg:#eceee6;--m-st:#fff;--m-st2:#dcdccf;font-family:"IBM Plex Sans",sans-serif;color:var(--ink);background:var(--sf)}
-.ab *{scrollbar-width:thin}
-.ab [data-go],.ab [data-pg]{cursor:pointer}
-.mp{position:relative;overflow:hidden;background:var(--m-bg);border-radius:10px}
-.mp::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 47%,var(--m-st) 47% 52%,transparent 52%),linear-gradient(0deg,transparent 58%,var(--m-st) 58% 63%,transparent 63%),linear-gradient(35deg,transparent 30%,var(--m-st2) 30% 32%,transparent 32%)}
-.mp i{position:absolute;left:50%;top:50%;width:var(--cs,110px);height:var(--cs,110px);margin:calc(var(--cs,110px)/-2) 0 0 calc(var(--cs,110px)/-2);border-radius:50%;background:rgba(220,38,38,.2);border:2px solid #dc2626}
-.mp u{position:absolute;left:var(--px,50%);top:var(--py,50%);width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#dc2626;border:3px solid #fff}
-.ph{border-radius:8px;background:linear-gradient(135deg,#d4e3dc,#b7d0c4);display:grid;place-items:center;font-size:11px;color:#2f5a49;text-align:center}
-.tg{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--br);font-weight:600;white-space:nowrap}
-.tg.w{background:var(--warnbg);color:var(--warn)}.tg.b{background:var(--badbg);color:var(--bad)}.tg.nt{background:#eef1f0;color:var(--mut)}
-.btn{display:block;background:var(--br);color:#fff;text-align:center;font-weight:600;padding:12px;border-radius:8px}
-.btn.o{background:#fff;color:var(--br);border:1px solid var(--br)}
-.fld{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:10px 12px;color:var(--mut);margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
-.fld small{display:block;font-size:10px;color:var(--mut)}
-.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kpi{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--mut)}
-.kpi b{display:block;font:500 20px "IBM Plex Mono",monospace;color:var(--ink)}
-.card{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:12px;margin-bottom:8px}
-.card b{font-weight:600}.card>b{display:block}.card small{color:var(--mut);display:block}
-
-/* ----- phone ----- */
-.pn{min-height:100%;display:flex;flex-direction:column;font-size:13px;line-height:1.4;background:var(--sf)}
-.sbar{height:26px;flex:none;display:flex;justify-content:space-between;padding:6px 16px 0;font-size:10px;color:var(--mut)}
-.phd{display:flex;align-items:center;gap:8px;padding:6px 16px 10px;font-weight:600;font-size:16px;position:sticky;top:0;background:var(--sf);z-index:2}
-.phd .bk{width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--br);display:grid;place-items:center;cursor:pointer;font-size:14px}
-.pb{padding:0 16px 24px;flex:1}
-.sec{font-size:10px;color:var(--mut);font-weight:600;padding:14px 16px 4px;letter-spacing:.04em}
-.row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--ln);background:#fff}
-.row .ic{width:28px;height:28px;border-radius:8px;background:var(--soft);color:var(--br);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
-.row b{font-weight:500}.row small{display:block;color:var(--mut);font-size:11px}.row .ch{margin-left:auto;color:var(--mut)}
-.sh{padding:2px 0}
-.act{display:flex;gap:10px;padding:12px;background:#fff;border:1px solid var(--ln);border-radius:8px;margin-bottom:8px}
-.act .n{width:24px;height:24px;border-radius:50%;background:var(--soft);color:var(--br);font-weight:700;display:grid;place-items:center;flex:none;font-size:12px}
-.hd2{font-size:15px;font-weight:600;margin:20px 0 8px}
-.lim{font-size:11px;color:var(--mut);margin:0 0 4px}
-
-/* ----- desktop ----- */
-.side{position:absolute;left:0;top:0;bottom:0;width:230px;background:var(--sf);border-right:1px solid var(--ln);padding:26px 16px;overflow:auto}
-.wm{font-weight:600;font-size:20px;color:var(--br);padding:0 10px 18px}
-.nv{padding:9px 10px;border-radius:8px;font-size:14px;color:var(--mut);margin-bottom:2px}
-.nv.on{background:var(--soft);color:var(--br);font-weight:600}
-.nvh{font-size:11px;color:var(--mut);font-weight:600;padding:12px 10px 4px}
-.main{position:absolute;left:230px;right:0;top:0;bottom:0;padding:28px 36px;overflow:hidden;background:#fff}
-.main h3{margin:0 0 2px;font-size:22px;font-weight:600}
-.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
-.strip{display:flex;border:1px solid var(--ln);border-radius:8px;margin-bottom:18px}
-.strip div{flex:1;padding:12px 16px;border-right:1px solid var(--ln);font-size:12px;color:var(--mut)}
-.strip div:last-child{border:0}
-.strip b{display:block;font:500 24px "IBM Plex Mono",monospace;color:var(--ink)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-weight:500;color:var(--mut);font-size:12px;padding:8px 10px;border-bottom:1px solid var(--ln)}
-td{padding:10px;border-bottom:1px solid var(--ln);vertical-align:top}
-tr.sel td{background:var(--soft)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
-.hd{font-size:14px;font-weight:600;margin:14px 0 6px}
-.dact{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--ln);border-radius:8px;margin-bottom:6px;font-size:13px}
-.dact .n{width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--br);font-weight:700;display:grid;place-items:center;flex:none;font-size:12px}
-.dbox{border:1px solid var(--ln);border-radius:8px;padding:12px 14px;margin-bottom:8px;font-size:13px}
-.dbox small{display:block;color:var(--mut)}
-.login{position:absolute;inset:0;background:var(--sf);display:grid;place-items:center}
-.lc{width:380px;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:32px}
-.lc .wm{padding:0 0 4px;font-size:26px}
-.bar2{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.bar2 i{display:block;height:100%;background:var(--br)}
-@media (prefers-reduced-motion:no-preference){.group button,.chips button{transition:background .15s}}
-.hero{max-width:1100px;margin:28px auto 8px;padding:40px 32px;border-radius:20px;background:linear-gradient(135deg,#0a8f6b,#0b6e56 60%,#14211c);color:#fff}
-.hero .eyebrow{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.16);padding:4px 12px;border-radius:99px}
-.hero h2{font-size:clamp(26px,4.2vw,42px);line-height:1.15;margin:16px 0 12px;font-weight:600;max-width:20ch}
-.hero p{font-size:17px;max-width:56ch;margin:0 0 22px;opacity:.92}
-.hero .feats{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.hero .feats li{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 16px}
-.hero .feats b{display:block;font-weight:600;margin-bottom:2px}.hero .feats span{font-size:13px;opacity:.85}
-.hero .cta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.hero .cta a{min-height:46px;padding:0 22px;border-radius:10px;display:inline-grid;place-items:center;font-weight:600;text-decoration:none}
-.hero .go{background:#fff;color:#0a6e56}.hero .alt{border:1px solid rgba(255,255,255,.6);color:#fff}
-.hero small{opacity:.75}
-.pframe{box-shadow:0 24px 60px rgba(10,60,45,.28)}
-html{scroll-behavior:smooth}
+:root{--bg:#f4f7f5;--ink:#14211c;--mut:#52635b;--line:#d9e2de;--card:#fff;--br:#0a8f6b;--br2:#0b6e56;--soft:#e3f1eb;--warn:#b45309;--warnbg:#fdecd2;--bad:#b3261e;--badbg:#fbe3e0;--dk:#10201a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "IBM Plex Sans",system-ui,sans-serif}
+.w{max-width:1120px;margin:0 auto;padding:0 20px}
+section{padding:72px 0}
+h1,h2,h3{line-height:1.15;margin:0}
+h2{font-size:clamp(26px,3.6vw,38px);font-weight:700;letter-spacing:-.01em}
+.kick{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--br);margin-bottom:12px}
+.lead{color:var(--mut);font-size:18px;max-width:62ch;margin:14px 0 0}
+nav{position:sticky;top:0;z-index:5;background:rgba(244,247,245,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .w{display:flex;align-items:center;gap:24px;height:60px}
+nav b{font-size:20px;color:var(--br);margin-right:auto}
+nav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:500}
+nav a.cta{background:var(--br);color:#fff;padding:9px 16px;border-radius:8px}
+@media(max-width:760px){nav a:not(.cta){display:none}}
+.hero{background:linear-gradient(135deg,var(--br) 0%,var(--br2) 55%,var(--dk) 100%);color:#fff;padding:80px 0 0;overflow:hidden}
+.hero .g{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:end}
+@media(max-width:860px){.hero .g{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(32px,5vw,54px);font-weight:700;letter-spacing:-.02em;max-width:16ch}
+.hero p{font-size:19px;opacity:.92;max-width:50ch;margin:18px 0 26px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:34px}
+.chips span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500}
+.btn{display:inline-block;padding:13px 22px;border-radius:10px;font-weight:600;text-decoration:none}
+.btn.w1{background:#fff;color:var(--br2)}.btn.o{border:1px solid rgba(255,255,255,.6);color:#fff;margin-left:8px}
+.hero .ph{justify-self:center;margin-bottom:-60px}
+/* phone mock */
+.phone{width:290px;height:560px;background:#16201c;border-radius:36px;padding:9px;box-shadow:0 30px 70px rgba(0,0,0,.3);flex:none}
+.scr{height:100%;background:#f6f8f7;border-radius:28px;overflow:hidden;color:var(--ink);font-size:12px;line-height:1.4;position:relative}
+.sb{display:flex;justify-content:space-between;padding:10px 16px 4px;font-size:10px;color:var(--mut)}
+.hd{padding:6px 16px 10px;font-weight:700;font-size:15px}
+.pb{padding:0 14px}
+.c{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.c small{display:block;color:var(--mut);font-size:10.5px}
+.c b{font-weight:600}
+.row{display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px}
+.row i{width:26px;height:26px;border-radius:7px;background:var(--soft);color:var(--br);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:11px;flex:none}
+.row small{display:block;color:var(--mut);font-size:10px}
+.tg{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--br)}
+.tg.w{background:var(--warnbg);color:var(--warn)}.tg.b{background:var(--badbg);color:var(--bad)}.tg.n{background:#eceff0;color:var(--mut)}
+.btnm{background:var(--br);color:#fff;text-align:center;font-weight:600;padding:10px;border-radius:8px;margin:8px 0}
+.kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:9.5px;color:var(--mut)}
+.kpi b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+.map{height:150px;border-radius:10px;background:#e8ebe3;position:relative;overflow:hidden;margin-bottom:8px}
+.map:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 47%,#fff 47% 53%,transparent 53%),linear-gradient(0deg,transparent 55%,#fff 55% 61%,transparent 61%)}
+.map i{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px;border-radius:50%;background:rgba(10,143,107,.18);border:2px solid var(--br)}
+.map u{position:absolute;left:56%;top:46%;width:12px;height:12px;border-radius:50%;background:var(--br);border:3px solid #fff}
+.shelf{height:100px;border-radius:10px;background:linear-gradient(#cfd8d3 0 30%,#e7ece9 30% 34%,#cfd8d3 34% 64%,#e7ece9 64% 68%,#cfd8d3 68%);position:relative;margin-bottom:8px}
+.shelf b{position:absolute;bottom:8px;width:18%;height:20px;border-radius:3px;background:var(--br);opacity:.85}
+.shelf b.x{background:transparent;border:2px dashed var(--bad)}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;counter-reset:s}
+@media(max-width:900px){.steps{grid-template-columns:1fr 1fr}}@media(max-width:520px){.steps{grid-template-columns:1fr}}
+.st{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;counter-increment:s}
+.st:before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--br);color:#fff;font-weight:700;margin-bottom:14px}
+.st h3{font-size:18px;margin-bottom:6px}.st p{margin:0;color:var(--mut);font-size:14.5px}
+/* problems */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:36px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.pc{border-radius:14px;padding:26px;border:1px solid var(--line);background:var(--card)}
+.pc.bad{background:#fff7f5;border-color:#f1d4cf}.pc.good{background:var(--soft);border-color:#c5e1d6}
+.pc h3{font-size:19px;margin-bottom:12px}.pc ul{margin:0;padding-left:20px;color:var(--mut)}.pc li{margin-bottom:6px}
+/* feature rows */
+.feat{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:center;padding:36px 0}
+.feat:nth-child(even){grid-template-columns:auto 1fr}.feat:nth-child(even) .txt{order:2}
+@media(max-width:820px){.feat,.feat:nth-child(even){grid-template-columns:1fr}.feat:nth-child(even) .txt{order:0}.feat .phone{justify-self:center}}
+.txt h3{font-size:26px;margin-bottom:10px}.txt p{color:var(--mut);margin:0 0 14px}
+.txt ul{margin:0;padding:0;list-style:none}.txt li{padding:6px 0 6px 28px;position:relative}
+.txt li:before{content:"";position:absolute;left:0;top:13px;width:14px;height:8px;border-left:3px solid var(--br);border-bottom:3px solid var(--br);transform:rotate(-45deg)}
+/* structure */
+.dark{background:var(--dk);color:#fff}.dark .lead{color:#b7c9c1}.dark .kick{color:#5fd4b2}
+.map2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+@media(max-width:820px){.map2{grid-template-columns:1fr}}
+.col{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:26px}
+.col h3{font-size:20px;margin-bottom:4px}.col>small{color:#9fb5ab;display:block;margin-bottom:18px}
+.col .g{display:grid;gap:8px}
+.col .g div{background:rgba(255,255,255,.08);border-radius:10px;padding:11px 14px;font-size:14.5px;display:flex;justify-content:space-between;gap:10px}
+.col .g div span{color:#9fb5ab;font-size:13px;text-align:right}
+.col .grp{font-size:11px;letter-spacing:.1em;color:#5fd4b2;font-weight:600;margin:10px 0 2px}
+/* dashboard mock */
+.desk{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(10,60,45,.14);overflow:hidden;margin-top:40px;display:grid;grid-template-columns:190px 1fr;color:var(--ink)}
+@media(max-width:760px){.desk{grid-template-columns:1fr}.desk .sd{display:none}}
+.sd{background:#f6f8f7;border-right:1px solid var(--line);padding:20px 14px;font-size:13px}
+.sd b{display:block;color:var(--br);font-size:19px;margin:0 8px 14px}.sd div{padding:8px 10px;border-radius:8px;color:var(--mut)}.sd .on{background:var(--soft);color:var(--br);font-weight:600}
+.dm{padding:24px}.dm h3{font-size:20px;margin-bottom:14px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));border:1px solid var(--line);border-radius:10px;margin-bottom:18px}
+.strip div{padding:12px 14px;border-right:1px solid var(--line);font-size:11.5px;color:var(--mut)}.strip div:last-child{border:0}.strip b{display:block;font-size:22px;color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--mut);font-weight:500;padding:8px 8px;border-bottom:1px solid var(--line)}td{padding:9px 8px;border-bottom:1px solid var(--line)}
+.dc{display:grid;grid-template-columns:1.4fr 1fr;gap:22px}@media(max-width:760px){.dc{grid-template-columns:1fr}}
+.act{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px}.act i{width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--br);font-style:normal;font-weight:700;display:grid;place-items:center;flex:none;font-size:12px}
+/* value */
+.vals{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px}@media(max-width:760px){.vals{grid-template-columns:1fr}}
+.v{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}.v b{display:block;font-size:34px;color:var(--br);letter-spacing:-.02em}.v p{margin:6px 0 0;color:var(--mut);font-size:14.5px}
+.fin{background:linear-gradient(135deg,var(--br),var(--br2));color:#fff;border-radius:22px;padding:54px 32px;text-align:center}
+.fin h2{max-width:20ch;margin:0 auto 14px}.fin p{opacity:.9;max-width:52ch;margin:0 auto 26px}
+footer{padding:28px 0 48px;color:var(--mut);font-size:13px;text-align:center}
 </style>
-
 </head>
 <body>
-<section class="hero">
-  <span class="eyebrow">Aplikasi sales lapangan</span>
-  <h2>Tahu apa yang terjadi di setiap toko, tanpa harus ada di sana.</h2>
-  <p>Zonein membantu tim sales mencatat kehadiran, kunjungan, dan kondisi rak, lalu merangkumnya untuk manajer secara otomatis.</p>
-  <ul class="feats">
-    <li><b>Absensi selfie dan GPS</b><span>Bukti hadir yang sulit dipalsukan.</span></li>
-    <li><b>Kunjungan terverifikasi</b><span>Server memeriksa posisi terhadap zona toko.</span></li>
-    <li><b>Cek rak dengan AI</b><span>Satu foto jadi daftar tindakan restok.</span></li>
-    <li><b>Dasbor manajer</b><span>Kehadiran, kunjungan, dan penjualan satu layar.</span></li>
-  </ul>
-  <div class="cta"><a class="go" href="#demo">Coba pratinjau</a><a class="alt" href="mailto:businessbigma@gmail.com?subject=Tanya%20Zonein">Hubungi Bigma</a></div>
-  <small>Pratinjau interaktif dengan data contoh. Klik layar di bawah untuk mencoba.</small>
-</section>
+<nav><div class="w"><b>Zonein</b><a href="#masalah">Masalah</a><a href="#cara">Cara kerja</a><a href="#fitur">Fitur</a><a href="#struktur">Struktur</a><a class="cta" href="#hubungi">Hubungi Bigma</a></div></nav>
 
-<header class="bar">
-  <h1>Zonein <span style="font-weight:400;color:var(--muted)">pratinjau interaktif</span></h1>
-  <div class="group" role="group" aria-label="Preview type" id="views">
-    <button data-v="phone" aria-pressed="true">Ponsel</button>
-    <button data-v="desk" aria-pressed="false">Desktop 16:10</button>
+<header class="hero"><div class="w g">
+  <div>
+    <span class="kick" style="color:#9be7d0">Aplikasi sales lapangan</span>
+    <h1>Tahu apa yang terjadi di setiap toko, tanpa harus ada di sana.</h1>
+    <p>Zonein membantu tim sales mencatat kehadiran, kunjungan, dan kondisi rak lewat ponsel. Manajer melihat semuanya di satu dasbor.</p>
+    <div class="chips"><span>Absensi selfie + GPS</span><span>Zona toko</span><span>Cek rak dengan AI</span><span>Dasbor manajer</span></div>
+    <a class="btn w1" href="#cara">Lihat cara kerjanya</a><a class="btn o" href="#hubungi">Hubungi Bigma</a>
   </div>
-</header>
+  <div class="ph"><div class="phone"><div class="scr"><div class="sb"><span>9:41</span><span>Data contoh</span></div>
+    <div class="hd">Halo, [Nama sales]</div>
+    <div class="row"><i>A</i><div><b>Absensi</b><small>absen masuk dan pulang</small></div></div>
+    <div class="row"><i>S</i><div><b>Kunjungan Toko</b><small>termasuk ketersediaan di rak</small></div></div>
+    <div class="row"><i>C</i><div><b>Cek Rak</b><small>foto rak, dapat saran restok</small></div></div>
+    <div class="row"><i>$</i><div><b>Input Penjualan</b></div></div>
+    <div class="row"><i>H</i><div><b>Harga</b></div></div>
+    <div class="row"><i>L</i><div><b>Cuti</b></div></div>
+    <div class="row"><i>R</i><div><b>Laporan Kehadiran</b></div></div></div></div></div>
+</div></header>
 
-<div class="wrap" id="demo">
-  <div id="phoneView">
-    <div class="idx" id="idx"></div>
-    <div class="pframe"><div id="pscreen" class="ab"></div></div>
-  </div>
-  <div id="deskView" hidden>
-    <div class="chips" id="dpages" role="group" aria-label="Desktop page"></div>
-    <div class="fit" id="fit"><div class="board ab" id="board"></div></div>
-  </div>
-</div>
+<section id="masalah" style="padding-top:110px"><div class="w">
+  <span class="kick">Masalahnya</span><h2>Tim lapangan sulit dipantau, laporan sering terlambat.</h2>
+  <p class="lead">Kebanyakan perusahaan FMCG masih mengandalkan chat dan spreadsheet. Manajer baru tahu rak kosong setelah penjualan turun.</p>
+  <div class="two">
+    <div class="pc bad"><h3>Tanpa Zonein</h3><ul><li>Absensi lewat chat, sulit dibuktikan</li><li>Tidak jelas sales benar-benar ke toko</li><li>Rak kosong ketahuan terlambat</li><li>Laporan dirangkum manual tiap minggu</li></ul></div>
+    <div class="pc good"><h3>Dengan Zonein</h3><ul style="color:#2c4a3f"><li>Selfie dan lokasi GPS saat absen</li><li>Server memeriksa posisi terhadap zona toko</li><li>Satu foto rak menghasilkan daftar tindakan</li><li>Dasbor terisi otomatis dari data lapangan</li></ul></div>
+  </div></div></section>
 
-<script>
-const $=id=>document.getElementById(id);
-const ROLE_NOTE='';
-/* ---------- bits ---------- */
-const map=(h,cs,px,py)=>`<div class="mp" style="height:${h}px;--cs:${cs||110}px;--px:${px||'50%'};--py:${py||'50%'}"><i></i><u></u></div>`;
-const ph=(t,h,w)=>`<div class="ph" style="height:${h}px;${w?'width:'+w+'px;':''}">${t}</div>`;
-const tg=(t,c)=>`<span class="tg ${c==='n'?'nt':(c||'')}">${t}</span>`;
-const sbar=()=>`<div class="sbar"><span>9:41</span><span>Data contoh</span></div>`;
-const hd=(t,back)=>`<div class="phd">${back?'<span class="bk" data-back>&lsaquo;</span>':''}${t}</div>`;
-const row=(i,t,s,go)=>`<div class="row" ${go?`data-go="${go}"`:''}><span class="ic">${i}</span><div><b>${t}</b>${s?`<small>${s}</small>`:''}</div><span class="ch">&rsaquo;</span></div>`;
-const fld=(l,v,x)=>`<div class="fld"><div><small>${l}</small>${v}</div>${x||''}</div>`;
-const sectionH=(t)=>`<div class="hd2">${t}</div>`;
+<section id="cara" style="background:#fff"><div class="w">
+  <span class="kick">Cara kerja</span><h2>Empat langkah, dari pintu toko sampai laporan manajer.</h2>
+  <div class="steps">
+    <div class="st"><h3>Absen</h3><p>Sales selfie dan kirim lokasi saat mulai dan selesai bekerja.</p></div>
+    <div class="st"><h3>Kunjungi toko</h3><p>Zonein memeriksa apakah sales benar berada di zona toko.</p></div>
+    <div class="st"><h3>Foto rak</h3><p>AI membaca foto dan menandai celah, label harga, dan pesaing.</p></div>
+    <div class="st"><h3>Lihat laporan</h3><p>Manajer melihat kehadiran, kunjungan, dan tindakan restok.</p></div>
+  </div></div></section>
 
-/* ---------- shelf check sample (same shape as the real AI result) ---------- */
-const SH={summary:'Rak mi terisi sekitar dua pertiga dengan dua celah terlihat. Merek kamu menguasai 38% facing tetapi sebagian besar ada di rak bawah.',full:68,share:38,facings:24,
- actions:[{n:1,a:'Isi ulang slot setinggi mata dari gudang belakang, minimal 6 facing',p:'Mi goreng Merek A isi 5',w:'Slot paling bernilai sedang kosong.',u:'Lakukan sekarang',o:'Kamu'},
-  {n:2,a:'Pasang label harga untuk mi kuah ayam',p:'Mi kuah ayam Merek A',w:'Tanpa label, pembeli tidak bisa melihat harga.',u:'Kunjungan ini',o:'Kamu'},
-  {n:3,a:'Minta manajer toko memindahkan lini mi kuah naik satu rak',p:null,w:'Rak bawah paling jarang terjual.',u:'Kunjungan berikutnya',o:'Perlu manajer'}],
- analysis:[['Slot terlaris kosong di rak setinggi mata','Label harga masih terpasang, jadi barang ini baru saja ada.','0 dari 24 facing'],['Promo pesaing menyedot perhatian','Merek B punya facing terbanyak dan label promo.','9 dari 24 facing (38%)'],['Produkmu tersebar di beberapa baris','Mi goreng di setinggi mata, mi kuah di rak bawah.','Merek A: 9 dari 24 facing (38%)']],
- products:[['KOSONG','b','Mi goreng Merek A isi 5','Merek A · 0 facing · 0% rak · rak setinggi mata · merek kamu','Rp 14.500','Label harga ada tetapi slot kosong.'],['RENDAH','w','Mi kuah ayam Merek A','Merek A · 2 facing · 8% rak · rak bawah · merek kamu','Label harga tidak terlihat','Baris tipis. Keyakinan sedang.'],['OK','','Mi kari Merek B','Merek B · 9 facing · 38% rak · rak setinggi mata','Rp 3.200 (promo)','Label promo terlihat.'],['OK','','Mi cup Merek C','Merek C · 6 facing · 25% rak · rak tengah','Rp 4.800','Stok cukup.']],
- gaps:[['Rak setinggi mata, sisi kiri','Slot kosong dengan label harga masih terpasang. Kemungkinan: Mi goreng Merek A isi 5']],
- comps:[['Merek B','9 facing · 38%','Menguasai rak setinggi mata dan menjalankan promo.'],['Merek C','6 facing · 25%','Rak tengah, stabil.']],
- issues:[['Merek kamu ada di rak bawah','Hanya lini mi kuah yang rendah, tetapi produk terlaris kosong di setinggi mata.'],['Label harga hilang','Mi kuah ayam Merek A belum punya.']],
- limits:['Stok gudang tidak terlihat, jadi slot kosong belum tentu berarti toko kehabisan.','Rak paling atas terpotong di foto.']};
+<section id="fitur"><div class="w">
+  <span class="kick">Fitur utama</span><h2>Apa yang dilihat sales di ponsel.</h2>
+  <div class="feat"><div class="txt"><h3>Absensi dengan selfie dan GPS</h3><p>Bukti hadir yang sulit dipalsukan, tanpa mesin absen.</p><ul><li>Selfie masuk dan pulang</li><li>Lokasi dan akurasi GPS tersimpan</li><li>Riwayat kehadiran pribadi</li></ul></div>
+    <div class="phone"><div class="scr"><div class="sb"><span>9:41</span><span>Data contoh</span></div><div class="hd">Absensi</div><div class="pb"><div class="c"><small>Status</small><b style="font-size:15px">Absen masuk pukul 08:02</b><small>Akurasi lokasi 12 m</small></div><div class="c" style="height:150px;background:linear-gradient(135deg,#d4e3dc,#b7d0c4);display:grid;place-items:center;color:#2f5a49">Foto selfie</div><div class="btnm">Absen pulang</div><div class="c"><small>Lokasi</small><b>-6.2088, 106.8456</b></div></div></div></div></div>
+  <div class="feat"><div class="txt"><h3>Kunjungan dengan zona toko</h3><p>Hasil zona dihitung server, jadi tidak bisa diatur sales.</p><ul><li>Radius zona per toko</li><li>Jarak dari toko terlihat jelas</li><li>Kunjungan di luar zona ditandai</li></ul></div>
+    <div class="phone"><div class="scr"><div class="sb"><span>9:41</span><span>Data contoh</span></div><div class="hd">Zonasi Toko</div><div class="pb"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>[Toko 3]</b><span class="tg">Dalam zona</span></div><div class="map"><i></i><u></u></div><div class="c"><small>Jarak dari toko</small><b style="font-size:18px">38 m</b> <small style="display:inline">batas 100 m</small></div><div class="btnm">Lanjut: foto rak</div></div></div></div></div>
+  <div class="feat"><div class="txt"><h3>Cek rak dengan AI</h3><p>Satu foto lorong rak berubah jadi saran yang bisa langsung dikerjakan.</p><ul><li>Persentase rak terisi dan porsi merek</li><li>Slot kosong dan label harga hilang</li><li>Tindakan berurutan: kerjakan sekarang atau minta manajer</li></ul></div>
+    <div class="phone"><div class="scr"><div class="sb"><span>9:41</span><span>Data contoh</span></div><div class="hd">[Toko 3]</div><div class="pb"><div class="shelf"><b style="left:6%"></b><b style="left:28%" class="x"></b><b style="left:50%"></b><b style="left:72%"></b></div><div class="kv"><div class="kpi">Rak terisi<b>68%</b></div><div class="kpi">Porsi kamu<b>38%</b></div><div class="kpi">Facing<b>24</b></div></div><div class="c" style="margin-top:8px"><span class="tg b">KOSONG</span> <b>Mi goreng Merek A</b><small>Isi ulang slot setinggi mata</small></div><div class="c"><span class="tg w">RENDAH</span> <b>Mi kuah ayam</b><small>Pasang label harga</small></div></div></div></div></div>
+</div></section>
 
-/* ---------- estimasi sisa kredit API (contoh) ---------- */
-const BUDGET=5,USED={shelf:140,ins:20};
-const MODELS={haiku:{n:'Haiku 5.5',i:0.10,o:0.50},sonnet:{n:'Sonnet 5.5',i:2,o:10}};
-const TOK={shelf:[2700,2500],ins:[3000,1500]};
-let MD='haiku';
-const cost=(m,k)=>(TOK[k][0]*MODELS[m].i+TOK[k][1]*MODELS[m].o)/1e6;
-const usd=v=>'$'+v.toFixed(2),usd4=v=>'$'+v.toFixed(4);
-function CRED(){const m=MODELS[MD],cs=cost(MD,'shelf'),ci=cost(MD,'ins');
- const used=USED.shelf*cs+USED.ins*ci,left=Math.max(0,BUDGET-used),pct=Math.min(100,used/BUDGET*100);
- return `<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Perkiraan sisa kredit AI</b>${tg('Perkiraan','n')}</div>
-<div style="font-size:26px;font-weight:600;margin:6px 0 2px">${usd(left)} <span style="font-size:13px;font-weight:400;color:var(--mut)">dari ${usd(BUDGET)}</span></div>
-<div style="height:8px;background:#e6e1d6;border-radius:4px;overflow:hidden"><div style="height:8px;width:${pct.toFixed(1)}%;background:${pct>80?'#a4372b':'var(--br)'}"></div></div>
-<small>Terpakai sekitar ${usd(used)} (${USED.shelf} cek rak + ${USED.ins} wawasan, model ${m.n}). Sisa cukup untuk sekitar ${Math.floor(left/cs).toLocaleString('id-ID')} cek rak lagi.</small>
-<div class="chips" style="margin:8px 0 4px"><span class="lbl">Model</span>${Object.keys(MODELS).map(k=>`<button data-md="${k}" aria-pressed="${k===MD}" style="min-height:34px;padding:0 10px">${MODELS[k].n}</button>`).join('')}</div>
-<small>Hitungan kasar: jumlah pemakaian x biaya rata-rata per cek (${usd4(cs)} per cek rak, ${usd4(ci)} per wawasan). Saldo asli ada di console Anthropic, angka ini bisa meleset.</small></div>`}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-md]');if(!b)return;MD=b.dataset.md;if(view==='desk')renderDesk();else renderPhone()});
-/* ---------- phone screens ---------- */
-let ROLE='rep';
-const P={
-login:()=>sbar()+`<div class="pn" style="justify-content:center;padding:0 26px"><div style="font-size:30px;font-weight:600;color:var(--br)">Zonein</div><div style="color:var(--mut);margin-bottom:22px">Mulai aktivitasmu hari ini</div>${fld('Email','[employee@sample.com]')}${fld('Kata sandi','••••••••','<span>tampilkan</span>')}<div class="btn" data-go="home" style="margin-top:4px">Masuk</div><div style="color:var(--mut);font-size:11px;margin-top:12px">Akun dibuat oleh admin. Tidak ada pendaftaran mandiri.</div></div>`,
-home:()=>sbar()+`<div class="pn"><div style="padding:6px 16px 4px;display:flex;gap:10px;align-items:center"><span class="row" style="padding:0;border:0;background:none"><span class="ic" style="width:36px;height:36px;border-radius:50%">E</span></span><div><small style="color:var(--mut)">Halo,</small><div style="font-weight:600">[Nama karyawan]</div></div><span style="margin-left:auto;color:var(--mut);font-size:12px" data-go="login">Keluar</span></div>
-<div class="sec">PEKERJAANMU</div>
-${row('A','Absensi','absen masuk dan pulang','attendance')}${row('S','Kunjungan Toko','termasuk Ketersediaan di Rak','visit')}${row('C','Cek Rak','foto lorong rak, dapat peringatan restok','shelf')}${row('$','Input Penjualan','','sales')}${row('P','Harga','','pricing')}${row('L','Cuti','','leave')}${row('R','Laporan Kehadiran','riwayat absensimu','presence')}${row('M','Ringkasan Aktivitas','','summary')}
-${ROLE==='mgr'?`<div class="sec">ALAT MANAJER</div>${row('AI','Wawasan AI','ringkasan penjualan, stok, dan harga','insights')}${row('A','Laporan Absensi','','mattend')}${row('V','Laporan Kunjungan Toko','','mvisits')}${row('S','Kelola Toko','','mstores')}${row('A','Penugasan Toko','','massign')}${row('L','Persetujuan Cuti','3 menunggu','mleave')}<div class="sec">ADMIN</div>${row('+','Tambah Karyawan','','madd')}`:''}</div>`,
-attendance:()=>sbar()+`<div class="pn">${hd('Absensi',1)}<div class="pb"><div class="card"><small>Status</small><b style="font-size:18px">Absen masuk pukul 08:02</b><small>Area toko, akurasi 12 m</small></div>${ph('Pratinjau selfie',150)}<div style="height:10px"></div>${fld('Lokasi','-6.2088, 106.8456 (akurasi 12 m)')}<div class="btn" data-go="attendance">Ambil selfie dan absen pulang</div><div style="font-size:11px;color:var(--mut);margin-top:10px">Absen masuk butuh selfie dan GPS. Jika lokasi mati, absen diblokir. Tidak dicek terhadap zona.</div><div class="btn o" style="margin-top:14px" data-go="presence">Lihat laporan kehadiran</div></div></div>`,
-presence:()=>sbar()+`<div class="pn">${hd('Laporan Kehadiran',1)}<div class="pb"><div class="chips" style="margin:0 0 10px"><button style="min-height:36px;padding:0 10px">19 - 26 Okt</button></div>${['Sen, 26 Okt|08:02|17:14','Jum, 23 Okt|08:10|16:58','Kam, 22 Okt|07:58|17:05','Rab, 21 Okt|08:31|-'].map(r=>{const[a,b,c]=r.split('|');return `<div class="card" data-go="presdetail"><small>${a}</small><b>[Nama karyawan]</b><div class="kv" style="margin-top:8px"><div class="kpi">Absen masuk<b>${b}</b></div><div class="kpi">Absen pulang<b>${c}</b></div></div></div>`}).join('')}</div></div>`,
-presdetail:()=>sbar()+`<div class="pn">${hd('Detail Kehadiran',1)}<div class="pb"><b>[Nama karyawan]</b><div class="kv" style="margin:10px 0"><div class="kpi">Absen masuk<b>08:02</b></div><div class="kpi">Absen pulang<b>17:14</b></div></div><div class="hd2" style="margin-top:6px">Foto</div><div class="kv">${ph('Selfie masuk',120)}${ph('Selfie pulang',120)}</div><div class="hd2">Lokasi</div>${map(170,70)}<small style="color:var(--mut)">Akurasi GPS 12 m</small></div></div>`,
-visit:()=>sbar()+`<div class="pn">${hd('Kunjungan Toko',1)}<div class="pb">${fld('Toko','[Toko 3] ([ST-003])','<span>▾</span>')}${ph('Foto toko',170)}<div style="height:12px"></div><div class="btn" data-go="zone">Kirim kunjungan</div><div style="font-size:11px;color:var(--mut);margin-top:10px">Server memeriksa posisimu terhadap zona toko. Kamu tidak bisa mengatur hasilnya.</div></div></div>`,
-zone:()=>sbar()+`<div class="pn">${hd('Zonasi Toko',1)}<div class="pb"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>[Toko 3]</b>${tg('Dalam zona')}</div>${map(260,150,'56%','46%')}<div class="card" style="margin-top:10px"><small>Jarak dari toko</small><b>38 m</b> <small style="display:inline">batas 100 m</small></div><div class="btn" data-go="osa">Lanjut: foto ketersediaan di rak</div></div></div>`,
-osa:()=>sbar()+`<div class="pn">${hd('Ketersediaan di Rak',1)}<div class="pb"><div style="color:var(--mut);margin-bottom:10px">Foto setiap penempatan di toko ini.</div>${[['Rak Utama','2 foto'],['Display Kasir','1 foto'],['Display Tambahan','tambah foto']].map(x=>`<div class="card" style="display:flex;align-items:center;gap:12px">${ph('Foto',54,54)}<div><b>${x[0]}</b><small>${x[1]}</small></div><span style="margin-left:auto;color:var(--br)">+</span></div>`).join('')}<div class="btn" style="margin-top:10px" data-go="home">Simpan laporan</div></div></div>`,
-shelf:()=>sbar()+`<div class="pn">${hd('Cek Rak',1)}<div class="pb">${fld('Toko','[Toko 3] ([ST-003])','<span>▾</span>')}${fld('Merek kamu (opsional)','Merek A','')}<div style="font-size:11px;color:var(--mut);margin:-4px 0 10px">Pisahkan dengan koma. Membantu AI menghitung porsi rak dan pesaing.</div>${ph('Tampilan kamera lorong rak',210)}<div style="font-size:11px;color:var(--mut);margin:8px 0 12px">Ambil satu foto lorong yang jelas dari depan, seluruh rak masuk bingkai.</div><div class="btn" data-go="shelfres">Foto lorong rak</div><div class="hd2">Cek terbaru</div><div class="card" data-go="shelfres"><b>[Toko 3]</b><small>26 Okt 10:41. Rak mi terisi sekitar dua pertiga dengan dua celah terlihat.</small></div><div class="card" data-go="shelfres"><b>[Toko 1]</b><small>23 Okt 14:05. Lemari pendingin minuman stok cukup, satu label harga hilang.</small></div></div></div>`,
-shelfres:()=>sbar()+`<div class="pn">${hd('[Toko 3]',1)}<div class="pb">${ph('Foto lorong rak',130)}<p style="margin:12px 0 10px">${SH.summary}</p><div class="kv" style="grid-template-columns:1fr 1fr 1fr"><div class="kpi">Rak terisi<b>${SH.full}%</b></div><div class="kpi">Porsi kamu<b>${SH.share}%</b></div><div class="kpi">Facing<b>${SH.facings}</b></div></div>
-${sectionH('Tindakan utama')}${SH.actions.map(x=>`<div class="act"><span class="n">${x.n}</span><div><b>${x.a}</b><div>${x.w}</div><div style="margin-top:4px">${tg(x.u)} ${tg(x.o,'n')}${x.p?' '+tg(x.p,'n'):''}</div></div></div>`).join('')}
-${sectionH('Analisis')}${SH.analysis.map(x=>`<div class="card"><b>${x[0]}</b>${x[1]}<small>${x[2]}</small></div>`).join('')}
-${sectionH('Produk')}${SH.products.map(x=>`<div class="card"><div>${tg(x[0],x[1])} <b>${x[2]}</b></div><small>${x[3]}</small><small>${x[4]}</small><div style="margin-top:2px">${x[5]}</div></div>`).join('')}
-${sectionH('Celah di rak')}${SH.gaps.map(x=>`<div class="card"><b>${x[0]}</b>${x[1]}</div>`).join('')}
-${sectionH('Pesaing')}${SH.comps.map(x=>`<div class="card" style="display:flex;justify-content:space-between;gap:8px"><div><b>${x[0]}</b><small>${x[2]}</small></div><small style="text-align:right">${x[1]}</small></div>`).join('')}
-${sectionH('Masalah penempatan')}${SH.issues.map(x=>`<div class="card"><b>${x[0]}</b>${x[1]}</div>`).join('')}
-${sectionH('Yang tidak bisa dilihat dari foto ini')}${SH.limits.map(l=>`<p class="lim">• ${l}</p>`).join('')}<p class="lim">Perkiraan AI dari satu foto. Jumlah dan porsi hanya kira-kira. Pastikan sebelum memesan.</p></div></div>`,
-sales:()=>sbar()+`<div class="pn">${hd('Input Penjualan',1)}<div class="pb">${fld('Toko','[Toko 3] ([ST-003])','<span>▾</span>')}${fld('Produk','Mi goreng Merek A isi 5')}${fld('Unit terjual','48')}${fld('Tanggal','26 Okt 2026','<span>▾</span>')}<div class="btn">Simpan penjualan</div><div class="hd2">Terbaru</div>${[['Mi goreng Merek A isi 5','[Toko 3], 25 Okt','52 unit'],['Mi kari Merek B','[Toko 3], 25 Okt','80 unit'],['Mi cup Merek C','[Toko 1], 24 Okt','31 unit']].map(x=>`<div class="row" style="border:0;padding:8px 0;background:none"><div><b>${x[0]}</b><small>${x[1]}</small></div><span class="ch">${x[2]}</span></div>`).join('')}</div></div>`,
-pricing:()=>sbar()+`<div class="pn">${hd('Harga',1)}<div class="pb">${fld('Toko','[Toko 3] ([ST-003])','<span>▾</span>')}${fld('Produk','Mi goreng Merek A isi 5')}${fld('Harga rak (Rp)','14500')}<div class="fld"><span>Harga promo</span><span>off</span></div><div class="btn">Simpan harga</div><div class="hd2">Terbaru</div>${[['Mi kari Merek B','[Toko 3] - promo','Rp 3.200'],['Mi cup Merek C','[Toko 1]','Rp 4.800']].map(x=>`<div class="row" style="border:0;padding:8px 0;background:none"><div><b>${x[0]}</b><small>${x[1]}</small></div><span class="ch">${x[2]}</span></div>`).join('')}</div></div>`,
-leave:()=>sbar()+`<div class="pn">${hd('Cuti',1)}<div class="pb">${fld('Jenis','Sakit','<span>▾</span>')}${fld('Dari','28 Okt 2026')}${fld('Sampai','29 Okt 2026')}${fld('Alasan (opsional)','Demam')}<div class="btn">Kirim pengajuan</div><div class="hd2">Pengajuanku</div>${[['Cuti','12 - 14 Okt','Disetujui',''],['Izin','5 Okt','Ditolak','b'],['Sakit','28 - 29 Okt','Menunggu','w']].map(x=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><b>${x[0]}</b><small>${x[1]}</small></div>${tg(x[2],x[3])}</div>`).join('')}</div></div>`,
-summary:()=>sbar()+`<div class="pn">${hd('Ringkasan Aktivitas',1)}<div class="pb"><div style="font-weight:600;margin-bottom:10px">Bulan ini</div><div class="kv"><div class="kpi">Hari hadir<b>14</b></div><div class="kpi">Kunjungan toko<b>32</b></div><div class="kpi">Dalam zona<b>31/32</b></div><div class="kpi">Cuti disetujui<b>1</b></div></div><p style="color:var(--mut);margin-top:12px">1 pengajuan cuti menunggu persetujuan.</p></div></div>`,
-insights:()=>sbar()+`<div class="pn">${hd('Wawasan AI',1)}<div class="pb">${CRED()}<div class="chips" style="margin:0 0 10px"><button style="min-height:36px;padding:0 10px">7 hari</button><button aria-pressed="true" style="min-height:36px;padding:0 10px">30 hari</button><button style="min-height:36px;padding:0 10px">90 hari</button></div><div class="btn">Buat wawasan</div><div style="color:var(--mut);font-size:11px;margin:12px 0 4px">30 hari terakhir, dibuat 26 Okt 09:10</div><div style="font-size:17px;font-weight:600">Mi memimpin penjualan, tetapi Merek A kehilangan ruang setinggi mata di 2 toko.</div>${INS_HTML()}</div></div>`,
-mattend:()=>sbar()+`<div class="pn">${hd('Laporan Absensi',1)}<div class="pb">${ROWS.map(r=>`<div class="card" data-go="presdetail"><small>26 Okt</small><b>${r[0]}</b><div class="kv" style="margin-top:8px"><div class="kpi">Masuk<b>${r[1]}</b></div><div class="kpi">Pulang<b>${r[2]}</b></div></div></div>`).join('')}</div></div>`,
-mvisits:()=>sbar()+`<div class="pn">${hd('Laporan Kunjungan Toko',1)}<div class="pb">${ROWS.map((r,i)=>`<div class="card" data-go="zone" style="display:flex;gap:10px;align-items:center"><div style="flex:1"><b>${r[0]} → [Toko ${i+1}]</b><small>26 Okt ${r[1]} · ${r[4]} m</small></div>${tg(r[3]==='Luar'?'Luar zona':'Dalam zona',r[3]==='Luar'?'w':'')}</div>`).join('')}</div></div>`,
-mstores:()=>sbar()+`<div class="pn">${hd('Kelola Toko',1)}<div class="pb">${[1,2,3,4].map(i=>`<div class="card"><b>[Toko ${i}] (ST-00${i})</b><small>[Alamat ${i}] · radius zona 100 m</small></div>`).join('')}<div class="hd2">Tambah toko</div>${fld('Nama','')}${fld('Lintang','')}${fld('Bujur','')}${fld('Radius zona (m)','100')}<div class="btn">Tambah toko</div></div></div>`,
-massign:()=>sbar()+`<div class="pn">${hd('Penugasan Toko',1)}<div class="pb">${fld('Karyawan','[Karyawan A]','<span>▾</span>')}${fld('Toko','[Toko 2]','<span>▾</span>')}<div class="btn">Tugaskan</div><div class="hd2">Saat ini</div>${[['[Karyawan A]','[Toko 1]'],['[Karyawan A]','[Toko 3]'],['[Karyawan B]','[Toko 2]']].map(x=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><b>${x[0]}</b><small>${x[1]}</small></div><span style="color:var(--bad);font-size:12px">Nonaktifkan</span></div>`).join('')}</div></div>`,
-mleave:()=>sbar()+`<div class="pn">${hd('Persetujuan Cuti',1)}<div class="pb">${[['[Karyawan B]','Sakit','28 - 29 Okt','Demam'],['[Karyawan D]','Cuti','2 - 6 Nov','Acara keluarga'],['[Karyawan E]','Izin','30 Okt','Ke bank']].map(x=>`<div class="card"><b>${x[0]}</b> ${tg(x[1],'n')}<small>${x[2]} · ${x[3]}</small><div class="kv" style="margin-top:10px"><div class="btn" style="padding:8px">Setujui</div><div class="btn o" style="padding:8px;color:var(--bad);border-color:var(--bad)">Tolak</div></div></div>`).join('')}</div></div>`,
-madd:()=>sbar()+`<div class="pn">${hd('Tambah Karyawan',1)}<div class="pb">${fld('Nama lengkap','')}${fld('Email','')}${fld('Kata sandi sementara','')}${fld('Peran','Sales lapangan','<span>▾</span>')}<div class="btn">Buat akun</div><div style="font-size:11px;color:var(--mut);margin-top:10px">Hanya login pemilik yang bisa membuka layar ini.</div></div></div>`
-};
-const ROWS=[['[Karyawan A]','08:02','17:14','Dalam',38],['[Karyawan B]','08:10','16:58','Dalam',22],['[Karyawan C]','08:31','17:40','Luar',212],['[Karyawan D]','07:58','17:05','Dalam',51],['[Karyawan E]','08:45','-','Dalam',77]];
-function INS_HTML(){return `${sectionH('Temuan')}<div class="card"><b>Mi goreng Merek A kosong di rak setinggi mata di 2 toko</b>Kedua toko juga belum punya label harga untuk mi kuah.<small>2 dari 5 cek rak ditandai KOSONG</small></div><div class="card"><b>Promo Merek B menarik volume</b>Unit naik sementara Merek A datar.<small>Merek B 1.240 unit (+18%), Merek A 980 (+1%)</small></div>${sectionH('Risiko stok habis')}<div class="card"><b>Mi goreng Merek A isi 5</b>Kosong di setinggi mata, penjualan terakhir kuat.<small>[Toko 3], [Toko 5]</small></div>${sectionH('Catatan harga')}<div class="card">Mi kari Merek B tampil promo Rp 3.200 di 3 toko, Rp 3.800 di 1 toko.</div>${sectionH('Tindakan')}<div class="act"><span class="n">1</span><div><b>Isi ulang Merek A di setinggi mata di [Toko 3] dan [Toko 5]</b><div>Produk terlaris, slot kosong.</div>${tg('Sales','n')}</div></div><div class="act"><span class="n">2</span><div><b>Negosiasikan ruang setinggi mata untuk Merek A</b><div>Promo pesaing menahannya.</div>${tg('Manajer','n')}</div></div>${sectionH('Data yang kurang')}<p class="lim">• Penjualan terisi di 3 dari 5 toko.</p><p class="lim">• Tidak ada data penjualan 30 hari sebelumnya di [Toko 4].</p><p class="lim" style="margin-top:10px">Ringkasan AI dari angka yang diisi di aplikasi. Periksa angka penting sebelum bertindak.</p>`}
+<section id="struktur" class="dark"><div class="w">
+  <span class="kick">Struktur aplikasi</span><h2>Dua sisi yang saling terhubung.</h2>
+  <p class="lead">Sales memakai aplikasi di ponsel. Manajer memakai dasbor di layar besar. Keduanya membaca data yang sama.</p>
+  <div class="map2">
+    <div class="col"><h3>Aplikasi ponsel</h3><small>Untuk sales lapangan</small><div class="g">
+      <div>Absensi<span>selfie dan GPS</span></div><div>Kunjungan toko<span>zona dan foto rak</span></div><div>Cek rak<span>analisis AI</span></div><div>Input penjualan<span>unit per produk</span></div><div>Harga<span>harga rak dan promo</span></div><div>Cuti<span>ajukan dan lacak</span></div><div>Laporan kehadiran<span>riwayat pribadi</span></div></div></div>
+    <div class="col"><h3>Dasbor manajer</h3><small>Untuk manajer dan pemilik</small><div class="g">
+      <div>Dasbor<span>ringkasan harian</span></div><div>Absensi dan kunjungan<span>foto dan peta</span></div><div>Cek rak<span>tindakan dan celah</span></div><div>Penjualan dan harga<span>tren per produk</span></div><div>Persetujuan cuti<span>setujui atau tolak</span></div><div>Toko dan karyawan<span>zona, penugasan, akun</span></div></div></div>
+  </div></div></section>
 
-const IDX=[['Mulai',[['login','Masuk'],['home','Menu utama']]],['Absensi',[['attendance','Absen masuk dan pulang'],['presence','Laporan kehadiran'],['presdetail','Detail kehadiran']]],['Toko',[['visit','Kunjungan toko'],['zone','Cek zona'],['osa','Foto ketersediaan di rak']]],['Cek Rak (AI)',[['shelf','Ambil foto'],['shelfres','Hasil: tindakan dan analisis']]],['Penjualan dan harga',[['sales','Input penjualan'],['pricing','Harga'],['summary','Ringkasan aktivitas']]],['Orang',[['leave','Pengajuan cuti']]],['Manajer',[['insights','Wawasan AI'],['mattend','Laporan absensi'],['mvisits','Laporan kunjungan'],['mstores','Kelola toko'],['massign','Penugasan toko'],['mleave','Persetujuan cuti'],['madd','Tambah karyawan']]]];
-let stack=['login'];
-function renderPhone(){
-  const cur=stack[stack.length-1];
-  $('pscreen').innerHTML=P[cur]();$('pscreen').scrollTop=0;
-  $('idx').innerHTML=`<h2>Layar</h2><div class="chips" style="margin-bottom:10px"><span class="lbl">Peran</span><button data-role="rep" aria-pressed="${ROLE==='rep'}">Sales lapangan</button><button data-role="mgr" aria-pressed="${ROLE==='mgr'}">Manajer</button></div>`+IDX.map(g=>`<div class="grp"><b>${g[0]}</b><div class="chips" style="margin:0">${g[1].map(s=>`<button data-j="${s[0]}" aria-pressed="${s[0]===cur}" style="min-height:40px">${s[1]}</button>`).join('')}</div></div>`).join('');
-}
-$('pscreen').addEventListener('click',e=>{if(e.target.closest('[data-back]')){if(stack.length>1)stack.pop();else stack=['home'];if(stack[stack.length-1]==='login'&&stack.length===1)stack=['home'];renderPhone();return}const g=e.target.closest('[data-go]');if(g){const to=g.dataset.go;if(to==='login'){stack=['login']}else if(to==='home'){stack=['home']}else stack.push(to);renderPhone()}});
-$('idx').addEventListener('click',e=>{const r=e.target.closest('[data-role]');if(r){ROLE=r.dataset.role;renderPhone();return}const j=e.target.closest('[data-j]');if(j){stack=j.dataset.j==='login'?['login']:(j.dataset.j==='home'?['home']:['home',j.dataset.j]);renderPhone()}});
+<section style="background:#fff"><div class="w">
+  <span class="kick">Dasbor manajer</span><h2>Semua hasil lapangan dalam satu layar.</h2>
+  <div class="desk"><div class="sd"><b>Zonein</b><div class="on">Dasbor</div><div>Absensi</div><div>Kunjungan toko</div><div>Cek rak</div><div>Penjualan</div><div>Persetujuan cuti</div><div>Toko</div><div>Karyawan</div></div>
+    <div class="dm"><h3>Dasbor</h3><div class="strip"><div>Absen masuk<b>42</b></div><div>Kunjungan<b>31</b></div><div>Luar zona<b>1</b></div><div>Celah rak<b>5</b></div><div>Cuti tertunda<b>3</b></div></div>
+    <div class="dc"><div><table><tr><th>Karyawan</th><th>Toko</th><th>Waktu</th><th>Zona</th></tr><tr><td>[Karyawan A]</td><td>[Toko 1]</td><td>08:02</td><td><span class="tg">Dalam</span></td></tr><tr><td>[Karyawan B]</td><td>[Toko 2]</td><td>08:10</td><td><span class="tg">Dalam</span></td></tr><tr><td>[Karyawan C]</td><td>[Toko 3]</td><td>08:31</td><td><span class="tg w">Luar</span></td></tr><tr><td>[Karyawan D]</td><td>[Toko 4]</td><td>07:58</td><td><span class="tg">Dalam</span></td></tr></table></div>
+    <div><div class="act"><i>1</i><div><b>Merek A kosong di rak setinggi mata</b><br><small>[Toko 3], [Toko 5]</small></div></div><div class="act"><i>2</i><div><b>3 pengajuan cuti menunggu</b></div></div><div class="act"><i>3</i><div><b>[Karyawan C] di luar zona</b><br><small>212 m dari toko</small></div></div></div></div></div></div>
+  <p style="color:var(--mut);font-size:13px;margin-top:14px">Tampilan ilustrasi dengan data contoh.</p>
+</div></section>
 
-/* ---------- desktop (manager dashboard, 1280x800) ---------- */
-const NAV=[['Ringkasan',['Dasbor','Absensi','Kunjungan toko']],['Data lapangan',['Cek rak','Penjualan dan harga']],['Wawasan',['Wawasan AI']],['Orang',['Persetujuan cuti','Karyawan','Toko']]];
-const PAGES=['Masuk','Dasbor','Absensi','Kunjungan toko','Cek rak','Wawasan AI','Penjualan dan harga','Persetujuan cuti','Toko','Karyawan'];
-let dp=1;
-const side=on=>`<div class="side"><div class="wm">Zonein</div>${NAV.map(g=>`<div class="nvh">${g[0].toUpperCase()}</div>${g[1].map(n=>`<div class="nv${n===on?' on':''}" data-pg="${n}">${n}</div>`).join('')}`).join('')}</div>`;
-const strip=a=>`<div class="strip">${a.map(x=>`<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div>`;
-const D={
-'Masuk':()=>`<div class="login"><div class="lc"><div class="wm">Zonein</div><div class="sub">Masuk ke dasbor manajer</div>${fld('Email','[manager@sample.com]')}${fld('Kata sandi','••••••••')}<div class="btn" data-pg="Dasbor">Masuk</div></div></div>`,
-'Dasbor':()=>side('Dasbor')+`<div class="main"><h3>Dasbor</h3><div class="sub">Sen 26 Okt, semua toko. Data contoh.</div>${strip([['Absen masuk hari ini','42'],['Kunjungan hari ini','31'],['Luar zona','1'],['Celah rak ditandai','5'],['Cuti tertunda','3']])}<div class="two"><div><div class="hd" style="margin-top:0">Kunjungan toko terbaru</div><table><tr><th>Karyawan</th><th>Toko</th><th>Waktu</th><th>Zona</th></tr>${ROWS.map((r,i)=>`<tr><td>${r[0]}</td><td>[Toko ${i+1}]</td><td>${r[1]}</td><td>${tg(r[3],r[3]==='Luar'?'w':'')}</td></tr>`).join('')}</table></div><div><div class="hd" style="margin-top:0">Perlu perhatian</div><div class="dact"><span class="n">1</span><div><b>Mi goreng Merek A kosong di rak setinggi mata</b><br><small style="color:var(--mut)">[Toko 3], [Toko 5]. Dari cek rak.</small></div></div><div class="dact"><span class="n">2</span><div><b>3 pengajuan cuti menunggu</b><br><small style="color:var(--mut)">Terlama sejak 22 Okt.</small></div></div><div class="dact"><span class="n">3</span><div><b>[Karyawan C] check-in di luar zona</b><br><small style="color:var(--mut)">212 m dari [Toko 3].</small></div></div><div class="hd">Absen masuk per jam</div><div style="display:flex;align-items:flex-end;gap:6px;height:90px">${[20,45,90,100,60,35,30,50,40,15].map(h=>`<i style="flex:1;height:${h}%;background:var(--br);opacity:.8;border-radius:3px 3px 0 0"></i>`).join('')}</div></div></div></div>`,
-'Absensi':()=>side('Absensi')+`<div class="main"><h3>Absensi</h3><div class="sub">19 Okt sampai 26 Okt. Filter tanggal, buka baris untuk foto dan peta.</div><div class="two" style="grid-template-columns:1.3fr 1fr"><div><table><tr><th>Karyawan</th><th>Absen masuk</th><th>Absen pulang</th><th>GPS</th></tr>${ROWS.map((r,i)=>`<tr class="${i==0?'sel':''}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>12 m</td></tr>`).join('')}</table></div><div><div class="hd" style="margin-top:0">[Karyawan A], 26 Okt</div><div class="kv" style="margin-bottom:10px"><div class="kpi">Absen masuk<b>08:02</b></div><div class="kpi">Absen pulang<b>17:14</b></div></div><div class="kv">${ph('Selfie masuk',110)}${ph('Selfie pulang',110)}</div><div style="height:10px"></div>${map(150,60)}</div></div></div>`,
-'Kunjungan toko':()=>side('Kunjungan toko')+`<div class="main"><h3>Kunjungan toko</h3><div class="sub">Hasil zona dihitung oleh server.</div><div class="two" style="grid-template-columns:1fr 1fr"><div><table><tr><th>Kunjungan</th><th>Jarak</th><th>Zona</th></tr>${ROWS.map((r,i)=>`<tr class="${r[3]==='Luar'?'sel':''}"><td>${r[0]}<br><small style="color:var(--mut)">[Toko ${i+1}] ${r[1]}</small></td><td>${r[4]} m</td><td>${tg(r[3],r[3]==='Luar'?'w':'')}</td></tr>`).join('')}</table></div><div><div class="hd" style="margin-top:0">[Karyawan C] di [Toko 3] ${tg('Luar zona','w')}</div>${map(300,110,'64%','58%')}<div style="height:10px"></div>${ph('Foto toko',130)}</div></div></div>`,
-'Cek rak':()=>side('Cek rak')+`<div class="main"><h3>Cek rak</h3><div class="sub">[Toko 3], 26 Okt 10:41, oleh [Karyawan A]. Hasil AI dari satu foto.</div><div class="three" style="grid-template-columns:230px 1fr 1fr"><div>${ph('Foto lorong rak',170)}<div class="kv" style="margin-top:8px"><div class="kpi">Penuh<b>${SH.full}%</b></div><div class="kpi">Porsi<b>${SH.share}%</b></div></div><div class="dbox" style="margin-top:8px"><b>Celah</b><small>${SH.gaps[0][0]}. ${SH.gaps[0][1]}</small></div><div class="dbox"><b>Tidak terlihat</b><small>${SH.limits.join(' ')}</small></div></div><div><div class="hd" style="margin-top:0">Tindakan utama</div>${SH.actions.map(x=>`<div class="dact"><span class="n">${x.n}</span><div><b>${x.a}</b><br><small style="color:var(--mut)">${x.w}</small><br>${tg(x.u)} ${tg(x.o,'n')}</div></div>`).join('')}<div class="hd">Analisis</div>${SH.analysis.map(x=>`<div class="dbox"><b>${x[0]}</b><small>${x[1]} ${x[2]}</small></div>`).join('')}</div><div><div class="hd" style="margin-top:0">Produk</div>${SH.products.map(x=>`<div class="dbox">${tg(x[0],x[1])} <b>${x[2]}</b><small>${x[3]}</small><small>${x[4]}. ${x[5]}</small></div>`).join('')}<div class="hd">Pesaing</div>${SH.comps.map(x=>`<div class="dbox"><b>${x[0]}</b> ${x[1]}<small>${x[2]}</small></div>`).join('')}</div></div></div>`,
-'Wawasan AI':()=>side('Wawasan AI')+`<div class="main"><h3>Wawasan AI</h3><div class="sub">30 hari terakhir, dibuat 26 Okt 09:10. Disusun dari input penjualan, cek rak, cek harga, dan kunjungan.</div>${CRED()}<div style="display:flex;gap:6px;margin-bottom:12px">${tg('7 hari','n')} ${tg('30 hari')} ${tg('90 hari','n')}</div><div style="font-size:19px;font-weight:600;margin-bottom:12px;max-width:760px">Mi memimpin penjualan, tetapi Merek A kehilangan ruang setinggi mata di 2 toko.</div><div class="three"><div><div class="hd" style="margin-top:0">Temuan</div><div class="dbox"><b>Mi goreng Merek A kosong di rak setinggi mata di 2 toko</b><small>2 dari 5 cek rak ditandai KOSONG. Lini mi kuah tanpa label harga.</small></div><div class="dbox"><b>Promo Merek B menarik volume</b><small>Merek B 1.240 unit (+18%), Merek A 980 (+1%).</small></div><div class="hd">Catatan harga</div><div class="dbox">Mi kari Merek B tampil promo Rp 3.200 di 3 toko, Rp 3.800 di 1 toko.</div></div><div><div class="hd" style="margin-top:0">Risiko stok habis</div><div class="dbox"><b>Mi goreng Merek A isi 5</b><small>Kosong di setinggi mata, penjualan terakhir kuat. [Toko 3], [Toko 5]</small></div><div class="hd">Tindakan</div><div class="dact"><span class="n">1</span><div><b>Isi ulang Merek A di setinggi mata di [Toko 3] dan [Toko 5]</b><br>${tg('Sales','n')}</div></div><div class="dact"><span class="n">2</span><div><b>Negosiasikan ruang setinggi mata untuk Merek A</b><br>${tg('Manajer','n')}</div></div></div><div><div class="hd" style="margin-top:0">Data yang kurang</div><div class="dbox"><small>Penjualan terisi di 3 dari 5 toko.</small><small>Tidak ada data penjualan 30 hari sebelumnya di [Toko 4].</small></div><div class="dbox"><small>Ringkasan AI dari angka yang diisi di aplikasi. Periksa angka penting sebelum bertindak.</small></div></div></div></div>`,
-'Penjualan dan harga':()=>side('Penjualan dan harga')+`<div class="main"><h3>Penjualan dan harga</h3><div class="sub">Diisi oleh sales. 30 hari terakhir.</div><div class="two"><div><div class="hd" style="margin-top:0">Unit terjual per produk</div><table><tr><th>Produk</th><th>Unit</th><th>Perubahan</th></tr><tr><td>Mi kari Merek B</td><td>1,240</td><td>+18%</td></tr><tr><td>Mi goreng Merek A isi 5</td><td>980</td><td>+1%</td></tr><tr><td>Mi cup Merek C</td><td>610</td><td>-4%</td></tr></table></div><div><div class="hd" style="margin-top:0">Harga rak terlihat</div><table><tr><th>Produk</th><th>Rendah</th><th>Tinggi</th><th>Promo</th></tr><tr><td>Mi kari Merek B</td><td>Rp 3.200</td><td>Rp 3.800</td><td>3 toko</td></tr><tr><td>Mi goreng Merek A</td><td>Rp 14.500</td><td>Rp 14.500</td><td>0</td></tr><tr><td>Mi cup Merek C</td><td>Rp 4.800</td><td>Rp 4.800</td><td>0</td></tr></table></div></div></div>`,
-'Persetujuan cuti':()=>side('Persetujuan cuti')+`<div class="main"><h3>Persetujuan cuti</h3><div class="sub">3 menunggu.</div><table><tr><th>Karyawan</th><th>Jenis</th><th>Tanggal</th><th>Alasan</th><th></th></tr>${[['[Karyawan B]','Sakit','28 - 29 Okt','Demam'],['[Karyawan D]','Cuti','2 - 6 Nov','Acara keluarga'],['[Karyawan E]','Izin','30 Okt','Ke bank']].map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td>${tg('Setujui')} ${tg('Tolak','b')}</td></tr>`).join('')}</table></div>`,
-'Toko':()=>side('Toko')+`<div class="main"><h3>Toko</h3><div class="sub">Radius zona adalah geofence untuk cek kunjungan. Tugaskan sales ke toko.</div><div class="two" style="grid-template-columns:1.4fr 1fr"><div><table><tr><th>Toko</th><th>Alamat</th><th>Zona</th><th>Ditugaskan</th></tr>${[1,2,3,4].map(i=>`<tr><td>[Toko ${i}] (ST-00${i})</td><td>[Alamat ${i}]</td><td>100 m</td><td>[Karyawan ${'ABCD'[i-1]}]</td></tr>`).join('')}</table></div><div><div class="hd" style="margin-top:0">Tambah toko</div>${fld('Nama','')}${fld('Lintang / Bujur','')}${fld('Radius zona (m)','100')}<div class="btn">Tambah toko</div></div></div></div>`,
-'Karyawan':()=>side('Karyawan')+`<div class="main"><h3>Karyawan</h3><div class="sub">Akun dibuat di sini oleh login pemilik. Tidak ada pendaftaran mandiri.</div><div class="two" style="grid-template-columns:1.4fr 1fr"><div><table><tr><th>Nama</th><th>Peran</th><th>Toko</th></tr>${[['[Karyawan A]','Sales lapangan','2'],['[Karyawan B]','Sales lapangan','1'],['[Karyawan C]','Sales lapangan','1'],['[Nama manajer]','Manajer','all']].map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></div><div><div class="hd" style="margin-top:0">Tambah karyawan</div>${fld('Nama lengkap','')}${fld('Email','')}${fld('Kata sandi sementara','')}${fld('Peran','Sales lapangan','<span>▾</span>')}<div class="btn">Buat akun</div></div></div></div>`
-};
-function fitBoard(){const w=$('fit').clientWidth,s=w/1280;$('board').style.transform=`scale(${s})`;$('fit').style.height=(800*s)+'px'}
-function renderDesk(){
-  $('dpages').innerHTML='<span class="lbl">Halaman</span>'+PAGES.map((n,i)=>`<button data-d="${n}" aria-pressed="${n===dp}">${n}</button>`).join('');
-  $('board').innerHTML=D[dp]();fitBoard();
-}
-$('dpages').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;dp=b.dataset.d;renderDesk()});
-$('board').addEventListener('click',e=>{const g=e.target.closest('[data-pg]');if(g&&D[g.dataset.pg]){dp=g.dataset.pg;renderDesk()}});
-dp='Dasbor';
-let view='phone';
-$('views').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;view=b.dataset.v;[...$('views').children].forEach(x=>x.setAttribute('aria-pressed',x===b));$('phoneView').hidden=view!=='phone';$('deskView').hidden=view!=='desk';if(view==='desk')renderDesk()});
-addEventListener('resize',()=>{if(view==='desk')fitBoard()});
-renderPhone();
-</script>
+<section><div class="w">
+  <span class="kick">Manfaat</span><h2>Yang berubah setelah tim memakai Zonein.</h2>
+  <div class="vals"><div class="v"><b>1 layar</b><p>untuk memantau kehadiran, kunjungan, dan rak semua toko.</p></div><div class="v"><b>1 foto</b><p>cukup untuk mendapat daftar tindakan restok yang jelas.</p></div><div class="v"><b>0 laporan manual</b><p>dasbor terisi otomatis dari data yang dicatat sales.</p></div></div>
+</div></section>
 
+<section id="hubungi" style="padding-top:0"><div class="w"><div class="fin"><h2>Ingin aplikasi seperti ini untuk tim Anda?</h2><p>Bigma membuat aplikasi sesuai cara kerja tim Anda, dari diskusi sampai siap dipakai.</p><a class="btn w1" href="mailto:businessbigma@gmail.com?subject=Tanya%20Zonein">Hubungi Bigma</a></div></div></section>
+<footer>Zonein oleh Bigma. Semua angka dan nama pada halaman ini adalah contoh.</footer>
 </body>
 </html>
