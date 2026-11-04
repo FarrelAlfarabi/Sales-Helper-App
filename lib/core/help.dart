@@ -52,7 +52,7 @@ const _contents = <HelpTopic, HelpContent>{
         'Sales lapangan memakai menu "Pekerjaanmu". Manajer dan admin juga melihat "Alat Manajer". Menu "Admin" hanya muncul untuk akun admin utama.',
     steps: [
       'Sales: absen masuk di awal hari, kunjungi toko yang ditugaskan, isi rak, penjualan, dan harga, lalu absen pulang.',
-      'Manajer: tugaskan toko ke sales, tinjau cuti, lihat laporan, lalu minta Wawasan AI.',
+      'Manajer: tugaskan toko ke sales, tinjau cuti, dan lihat laporan.',
       'Admin: tambah karyawan baru dan beri perannya.',
       'Setiap layar punya tombol ? di pojok kanan atas untuk penjelasan layar itu.',
     ],
@@ -126,7 +126,7 @@ const _contents = <HelpTopic, HelpContent>{
     ],
     rules: [
       'Hasil adalah perkiraan AI dari satu foto. Foto buram, gelap, atau terpotong membuat hasil kurang akurat.',
-      'Hasil disimpan dan dipakai manajer di Wawasan AI.',
+      'Hasil disimpan dan bisa dilihat manajer di Dasbor.',
     ],
     notEnforced: ['Akurasi AI belum diuji pada banyak foto toko nyata. Anggap sebagai saran, bukan fakta.'],
   ),
@@ -159,7 +159,7 @@ const _contents = <HelpTopic, HelpContent>{
     what: 'Melaporkan harga produk di rak toko, termasuk apakah sedang promo.',
     who: 'Sales lapangan.',
     steps: ['Pilih toko, isi nama produk dan harga dalam Rupiah, centang promo bila ada, lalu simpan.'],
-    rules: ['Harga tidak boleh negatif.', 'Laporan harga dipakai manajer di Wawasan AI.'],
+    rules: ['Harga tidak boleh negatif.', 'Laporan harga bisa dilihat manajer di Penjualan dan harga.'],
   ),
   HelpTopic.myAttendance: HelpContent(
     title: 'Laporan Kehadiran',
