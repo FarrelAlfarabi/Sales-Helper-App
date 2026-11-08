@@ -27,6 +27,37 @@ class _OsaScreenState extends State<OsaScreen> {
     'secondary_display': 'Display Tambahan',
   };
 
+  bool _restock = false;
+  final _restockNote = TextEditingController();
+  bool _finishing = false;
+
+  @override
+  void dispose() {
+    _restockNote.dispose();
+    super.dispose();
+  }
+
+  /// Simpan permintaan restock toko ini, lalu tutup alur kunjungan.
+  Future<void> _finish() async {
+    setState(() {
+      _finishing = true;
+      _error = null;
+    });
+    try {
+      await supabase.from('store_visits').update({
+        'restock_requested': _restock,
+        'restock_note': _restock && _restockNote.text.trim().isNotEmpty
+            ? _restockNote.text.trim()
+            : null,
+      }).eq('id', widget.storeVisitId);
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } catch (e) {
+      setState(() => _error = 'Gagal menyimpan permintaan restock: $e');
+    } finally {
+      if (mounted) setState(() => _finishing = false);
+    }
+  }
+
   final Map<String, bool> _saving = {};
   final Map<String, bool> _saved = {};
   String? _error;
@@ -124,9 +155,36 @@ class _OsaScreenState extends State<OsaScreen> {
                 ),
               ),
             const SizedBox(height: 12),
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: colorScheme.outlineVariant),
+              ),
+              child: Column(children: [
+                SwitchListTile(
+                  title: const Text('Toko minta restock'),
+                  subtitle: const Text('Nyalakan jika toko meminta barang ditambah'),
+                  value: _restock,
+                  onChanged: _finishing ? null : (v) => setState(() => _restock = v),
+                ),
+                if (_restock)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: TextField(
+                      controller: _restockNote,
+                      maxLength: 200,
+                      decoration: const InputDecoration(
+                        labelText: 'Barang yang diminta (opsional)',
+                      ),
+                    ),
+                  ),
+              ]),
+            ),
+            const SizedBox(height: 12),
             FilledButton(
-              onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
-              child: const Text('Selesai'),
+              onPressed: _finishing ? null : _finish,
+              child: Text(_finishing ? 'Menyimpan...' : 'Selesai'),
             ),
           ],
         ),

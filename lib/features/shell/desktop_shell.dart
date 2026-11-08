@@ -12,6 +12,7 @@ import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../reports/sales_price_screen.dart';
+import '../reports/daily_visit_summary_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
@@ -77,6 +78,7 @@ class _DesktopShellState extends State<DesktopShell> {
       _Group('Ringkasan', [
         _Item('Dasbor', Icons.space_dashboard_outlined, () => const DashboardScreen()),
         _Item('Absensi', Icons.event_available_outlined, () => const AttendanceReportScreen()),
+        _Item('Ringkasan harian', Icons.fact_check_outlined, () => const DailyVisitSummaryScreen()),
         _Item('Kunjungan toko', Icons.pin_drop_outlined, () => const StoreVisitReportScreen()),
       ]),
       _Group('Data lapangan', [
