@@ -7,6 +7,9 @@ import '../admin/store_management_screen.dart';
 import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../execution/campaign_management_screen.dart';
+import '../execution/execution_form_screen.dart';
+import '../execution/execution_gallery_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
@@ -63,6 +66,7 @@ class _DesktopShellState extends State<DesktopShell> {
           _Item('Absensi', Icons.fingerprint, () => const ClockInScreen()),
           _Item('Kunjungan toko', Icons.storefront_outlined, () => const StoreVisitScreen()),
           _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckScreen()),
+          _Item('Laporan eksekusi', Icons.campaign_outlined, () => const ExecutionFormScreen()),
           _Item('Input penjualan', Icons.point_of_sale, () => const SalesEntryScreen()),
           _Item('Harga', Icons.sell_outlined, () => const PricingScreen()),
           _Item('Cuti', Icons.beach_access_outlined, () => const LeaveScreen()),
@@ -80,6 +84,7 @@ class _DesktopShellState extends State<DesktopShell> {
         _Item('Kunjungan toko', Icons.pin_drop_outlined, () => const StoreVisitReportScreen()),
       ]),
       _Group('Data lapangan', [
+        _Item('Galeri foto', Icons.photo_library_outlined, () => const ExecutionGalleryScreen()),
         _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckScreen()),
         _Item('Penjualan dan harga', Icons.bar_chart_outlined, () => const SalesPriceScreen()),
       ]),
@@ -87,10 +92,12 @@ class _DesktopShellState extends State<DesktopShell> {
         _Item('Persetujuan cuti', Icons.fact_check_outlined, () => const LeaveReviewScreen()),
         _Item('Penugasan toko', Icons.assignment_ind_outlined, () => const StoreAssignmentScreen()),
         _Item('Toko', Icons.store_mall_directory_outlined, () => const StoreManagementScreen()),
+        _Item('Kampanye', Icons.campaign_outlined, () => const CampaignManagementScreen()),
         if (widget.isAdminAccount) _Item('Karyawan', Icons.group_outlined, () => const UserManagementScreen()),
       ]),
       _Group('Pekerjaanmu', [
         _Item('Absensi saya', Icons.fingerprint, () => const ClockInScreen()),
+        _Item('Laporan eksekusi', Icons.campaign_outlined, () => const ExecutionFormScreen()),
       ]),
     ];
   }

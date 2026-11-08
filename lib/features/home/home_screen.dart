@@ -6,6 +6,9 @@ import '../admin/store_assignment_screen.dart';
 import '../admin/store_management_screen.dart';
 import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
+import '../execution/campaign_management_screen.dart';
+import '../execution/execution_form_screen.dart';
+import '../execution/execution_gallery_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
@@ -173,6 +176,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () => _push(context, const ShelfCheckScreen()),
                     ),
                     _MenuRow(
+                      icon: Icons.campaign_outlined,
+                      label: 'Laporan Eksekusi',
+                      subtitle: 'foto poster dan materi kampanye di toko',
+                      onTap: () => _push(context, const ExecutionFormScreen()),
+                    ),
+                    _MenuRow(
                       icon: Icons.point_of_sale,
                       label: 'Input Penjualan',
                       subtitle: 'catat unit terjual per toko dan tanggal',
@@ -219,6 +228,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: 'tentukan sales mana memegang toko mana',
                         onTap: () =>
                             _push(context, const StoreAssignmentScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.photo_library_outlined,
+                        label: 'Galeri Foto',
+                        subtitle:
+                            'foto lapangan dengan filter kampanye, bulan, salesman; plus peringkat',
+                        onTap: () =>
+                            _push(context, const ExecutionGalleryScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.campaign,
+                        label: 'Kampanye',
+                        subtitle: 'tambah kampanye dan atur foto yang diminta',
+                        onTap: () =>
+                            _push(context, const CampaignManagementScreen()),
                       ),
                       _MenuRow(
                         icon: Icons.fact_check,
