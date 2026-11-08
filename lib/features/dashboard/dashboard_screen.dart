@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/supabase_client.dart';
+import '../shelf_check/shelf_actions.dart';
+import '../shelf_check/shelf_check_screen.dart';
 
 /// Dasbor manajer (Option A): lima angka hari ini, kunjungan terbaru,
 /// daftar "perlu perhatian", dan cek rak terbaru. Semua dari data asli.
@@ -56,7 +58,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             .limit(40),
         supabase
             .from('shelf_checks')
-            .select('id, summary, analysis, created_at, stores(name)')
+            .select('id, employee_id, summary, analysis, photo_path, created_at, stores(name), '
+                'profiles(full_name), shelf_check_actions(actions, note)')
             .order('created_at', ascending: false)
             .limit(20),
         supabase
@@ -314,7 +317,14 @@ class _ShelfCard extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final when = DateTime.tryParse('${s['created_at']}')?.toLocal();
     final store = (s['stores'] as Map?)?['name'] ?? 'Toko';
-    return Container(
+    final act = firstRelation(s['shelf_check_actions']);
+    final codes = shelfActionCodes(act?['actions']);
+    final note = '${act?['note'] ?? ''}'.trim();
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => ShelfResultScreen(check: s))),
+      child: Container(
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(color: cs.surfaceContainerHighest, borderRadius: BorderRadius.circular(10)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -325,8 +335,18 @@ class _ShelfCard extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+        const SizedBox(height: 6),
+        if (codes.isEmpty && note.isEmpty)
+          Text('Belum ada catatan tindakan sales',
+              style: t.bodySmall?.copyWith(fontStyle: FontStyle.italic, color: cs.onSurfaceVariant))
+        else ...[
+          Text('Tindakan sales: ${codes.map((c) => kShelfActionLabels[c] ?? c).join(', ')}',
+              maxLines: 3, overflow: TextOverflow.ellipsis, style: t.bodySmall),
+          if (note.isNotEmpty)
+            Text(note, maxLines: 2, overflow: TextOverflow.ellipsis, style: t.bodySmall),
+        ],
       ]),
-    );
+    ));
   }
 }
 
