@@ -123,10 +123,12 @@ const _contents = <HelpTopic, HelpContent>{
     steps: [
       'Pilih toko, lalu foto lorong rak dari depan dan seluruh rak terlihat.',
       'Tunggu hasil. Bagian "Tindakan utama" ditampilkan paling atas.',
+      'Di hasil, centang tindakan yang sudah kamu kerjakan di rak (menata ulang, menaruh produk baru, memasang promo, dll) lalu tekan "Simpan catatan".',
     ],
     rules: [
       'Hasil adalah perkiraan AI dari satu foto. Foto buram, gelap, atau terpotong membuat hasil kurang akurat.',
       'Hasil disimpan dan bisa dilihat manajer di Dasbor.',
+      'Catatan tindakanmu bisa dilihat manajer di Dasbor dan Laporan Cek Rak. Kamu bisa mengubahnya lagi lewat riwayat Cek terbaru.',
     ],
     notEnforced: ['Akurasi AI belum diuji pada banyak foto toko nyata. Anggap sebagai saran, bukan fakta.'],
   ),

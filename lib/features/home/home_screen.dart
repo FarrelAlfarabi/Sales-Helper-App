@@ -12,6 +12,7 @@ import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
+import '../reports/shelf_check_report_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
 import '../shell/desktop_shell.dart';
@@ -241,6 +242,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             'kunjungan sales, jarak dari toko, di dalam atau luar zona',
                         onTap: () =>
                             _push(context, const StoreVisitReportScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.photo_library_outlined,
+                        label: 'Laporan Cek Rak',
+                        subtitle:
+                            'foto rak semua sales dan tindakan yang mereka catat',
+                        onTap: () =>
+                            _push(context, const ShelfCheckReportScreen()),
                       ),
                     ],
                     if (isAdminAccount) ...[

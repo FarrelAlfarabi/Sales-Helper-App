@@ -12,6 +12,7 @@ import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../reports/sales_price_screen.dart';
+import '../reports/shelf_check_report_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
@@ -80,7 +81,7 @@ class _DesktopShellState extends State<DesktopShell> {
         _Item('Kunjungan toko', Icons.pin_drop_outlined, () => const StoreVisitReportScreen()),
       ]),
       _Group('Data lapangan', [
-        _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckScreen()),
+        _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckReportScreen()),
         _Item('Penjualan dan harga', Icons.bar_chart_outlined, () => const SalesPriceScreen()),
       ]),
       _Group('Orang dan toko', [
