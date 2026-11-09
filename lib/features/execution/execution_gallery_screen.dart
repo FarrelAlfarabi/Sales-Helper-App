@@ -386,7 +386,12 @@ class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
             TableRow(
               decoration: BoxDecoration(border: Border(top: BorderSide(color: cs.outlineVariant))),
               children: [
-                Padding(padding: const EdgeInsets.all(6), child: Text('${i + 1}')),
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: i < 3
+                      ? Icon(Icons.workspace_premium, size: 18, color: const [Color(0xFFD4A017), Color(0xFF8E9AA6), Color(0xFFB0703A)][i])
+                      : Text('${i + 1}'),
+                ),
                 Padding(padding: const EdgeInsets.all(6), child: Text(board[i].key)),
                 Padding(padding: const EdgeInsets.all(6), child: Text('${board[i].value}', textAlign: TextAlign.right)),
               ],
@@ -442,57 +447,94 @@ class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
   Widget _card(_Entry e) {
     final cs = Theme.of(context).colorScheme;
     final t = Theme.of(context).textTheme;
+    final muted = t.bodySmall?.copyWith(color: cs.onSurfaceVariant);
+    // Kartu mengikuti situs acuan: judul toko, baris kampanye, baris sales dan
+    // tanggal, lalu tiga foto bernomor dengan tombol mata.
+    final slots = e.campaign != null ? 3 : e.photos.length;
     return SizedBox(
-      width: 250,
+      width: 300,
       child: Card(
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => _openLightbox(e.photos, 0, (i) => _caption(e, e.photos[i])),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SizedBox(
-              height: 150,
-              child: Row(children: [
-                Expanded(flex: 2, child: _thumb(e.photos.first)),
-                if (e.photos.length > 1) ...[
-                  const SizedBox(width: 2),
-                  Expanded(
-                    child: Column(children: [
-                      for (var i = 1; i < e.photos.length && i < 3; i++) ...[
-                        if (i > 1) const SizedBox(height: 2),
-                        Expanded(child: SizedBox(width: double.infinity, child: _thumb(e.photos[i]))),
-                      ],
-                    ]),
-                  ),
-                ],
-              ]),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(e.storeName, style: t.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text(e.who, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                if (e.campaign != null) ...[
-                  const SizedBox(height: 6),
-                  Chip(
-                    label: Text(e.campaign!),
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor: cs.primaryContainer,
-                    side: BorderSide.none,
-                    labelStyle: TextStyle(color: cs.onPrimaryContainer),
-                  ),
-                ],
-                const SizedBox(height: 4),
-                Text(
-                  '${DateFormat('d MMM yyyy', 'id').format(e.when)} · ${e.photos.length} foto',
-                  style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                ),
-              ]),
-            ),
-          ]),
-        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+            width: double.infinity,
+            color: cs.surfaceContainerHighest,
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Text(e.storeName, style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700), maxLines: 2, overflow: TextOverflow.ellipsis),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              if (e.campaign != null)
+                Text.rich(TextSpan(children: [
+                  const TextSpan(text: 'Kampanye: '),
+                  TextSpan(text: e.campaign!, style: TextStyle(color: cs.primary, fontWeight: FontWeight.w600)),
+                  TextSpan(text: ' (${DateFormat('yyyy-MM').format(e.month)})'),
+                ]), style: muted),
+              const SizedBox(height: 2),
+              Text.rich(TextSpan(children: [
+                const TextSpan(text: 'Sales: '),
+                TextSpan(text: e.who, style: const TextStyle(fontWeight: FontWeight.w700)),
+                TextSpan(text: '  |  Tanggal: ${DateFormat('dd/MM/yyyy').format(e.when)}'),
+              ]), style: muted),
+            ]),
+          ),
+          Divider(height: 1, color: cs.outlineVariant),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              for (var i = 0; i < slots; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(child: _slot(e, i)),
+              ],
+            ]),
+          ),
+        ]),
       ),
     );
+  }
+
+  Widget _slot(_Entry e, int i) {
+    final cs = Theme.of(context).colorScheme;
+    final has = i < e.photos.length;
+    final label = has ? '${i + 1}. ${e.photos[i].label}' : '${i + 1}. -';
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      AspectRatio(
+        aspectRatio: 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: has
+              ? Stack(fit: StackFit.expand, children: [
+                  InkWell(
+                    onTap: () => _openLightbox(e.photos, i, (j) => _caption(e, e.photos[j])),
+                    child: _thumb(e.photos[i]),
+                  ),
+                  Positioned(
+                    right: 4,
+                    bottom: 4,
+                    child: Tooltip(
+                      message: 'Lihat foto',
+                      child: InkWell(
+                        onTap: () => _openLightbox(e.photos, i, (j) => _caption(e, e.photos[j])),
+                        child: CircleAvatar(
+                          radius: 12,
+                          backgroundColor: Colors.black54,
+                          child: const Icon(Icons.visibility_outlined, size: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ])
+              : Container(
+                  color: cs.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Text('Tidak ada foto', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+                ),
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(label, style: Theme.of(context).textTheme.labelSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+    ]);
   }
 
   Widget _flatGrid(List<_Entry> rows) {
