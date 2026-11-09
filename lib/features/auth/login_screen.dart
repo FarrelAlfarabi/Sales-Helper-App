@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme_controller.dart';
 
 import '../../core/supabase_client.dart';
 
@@ -57,6 +58,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: const [ThemeButton()],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

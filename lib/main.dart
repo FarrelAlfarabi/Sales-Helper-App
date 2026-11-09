@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/supabase_client.dart' as core;
 import 'core/theme.dart';
+import 'core/theme_controller.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_screen.dart';
 
@@ -15,6 +16,7 @@ Future<void> main() async {
   GoogleFonts.config.allowRuntimeFetching = false;
   Intl.defaultLocale = 'id';
   await initializeDateFormatting('id');
+  await ThemeController.load();
   // Supabase init used to be awaited here, before runApp() -- meaning
   // nothing painted at all (a blank white tab, no spinner, no error) until
   // it finished. If that call is slow or silently stuck (blocked network,
@@ -30,12 +32,16 @@ class ZoneinApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Zonein',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      home: const BootGate(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, mode, _) => MaterialApp(
+        title: 'Zonein',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: mode,
+        home: const BootGate(),
+      ),
     );
   }
 }

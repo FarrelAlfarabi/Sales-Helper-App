@@ -20,6 +20,7 @@ dependencies:
   latlong2: ^0.9.1
   google_fonts: ^6.2.1
   file_picker: ^13.3.2
+  shared_preferences: ^2.3.0
 
 dev_dependencies:
   flutter_test:

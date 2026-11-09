@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
 import '../../core/supabase_client.dart';
@@ -7,11 +8,16 @@ import '../admin/store_management_screen.dart';
 import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../execution/campaign_management_screen.dart';
+import '../execution/execution_form_screen.dart';
+import '../execution/execution_gallery_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../reports/sales_price_screen.dart';
+import '../reports/daily_visit_summary_screen.dart';
+import '../reports/shelf_check_report_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
@@ -63,6 +69,7 @@ class _DesktopShellState extends State<DesktopShell> {
           _Item('Absensi', Icons.fingerprint, () => const ClockInScreen()),
           _Item('Kunjungan toko', Icons.storefront_outlined, () => const StoreVisitScreen()),
           _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckScreen()),
+          _Item('Laporan eksekusi', Icons.campaign_outlined, () => const ExecutionFormScreen()),
           _Item('Input penjualan', Icons.point_of_sale, () => const SalesEntryScreen()),
           _Item('Harga', Icons.sell_outlined, () => const PricingScreen()),
           _Item('Cuti', Icons.beach_access_outlined, () => const LeaveScreen()),
@@ -77,20 +84,24 @@ class _DesktopShellState extends State<DesktopShell> {
       _Group('Ringkasan', [
         _Item('Dasbor', Icons.space_dashboard_outlined, () => const DashboardScreen()),
         _Item('Absensi', Icons.event_available_outlined, () => const AttendanceReportScreen()),
+        _Item('Ringkasan harian', Icons.fact_check_outlined, () => const DailyVisitSummaryScreen()),
         _Item('Kunjungan toko', Icons.pin_drop_outlined, () => const StoreVisitReportScreen()),
       ]),
       _Group('Data lapangan', [
-        _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckScreen()),
+        _Item('Galeri foto', Icons.photo_library_outlined, () => const ExecutionGalleryScreen()),
+        _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckReportScreen()),
         _Item('Penjualan dan harga', Icons.bar_chart_outlined, () => const SalesPriceScreen()),
       ]),
       _Group('Orang dan toko', [
         _Item('Persetujuan cuti', Icons.fact_check_outlined, () => const LeaveReviewScreen()),
         _Item('Penugasan toko', Icons.assignment_ind_outlined, () => const StoreAssignmentScreen()),
         _Item('Toko', Icons.store_mall_directory_outlined, () => const StoreManagementScreen()),
+        _Item('Kampanye', Icons.campaign_outlined, () => const CampaignManagementScreen()),
         if (widget.isAdminAccount) _Item('Karyawan', Icons.group_outlined, () => const UserManagementScreen()),
       ]),
       _Group('Pekerjaanmu', [
         _Item('Absensi saya', Icons.fingerprint, () => const ClockInScreen()),
+        _Item('Laporan eksekusi', Icons.campaign_outlined, () => const ExecutionFormScreen()),
       ]),
     ];
   }
@@ -147,6 +158,23 @@ class _DesktopShellState extends State<DesktopShell> {
                   Text(widget.name, style: t.bodyMedium?.copyWith(fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
                   Text(widget.roleLabel, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
                 ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: ValueListenableBuilder<ThemeMode>(
+                  valueListenable: ThemeController.mode,
+                  builder: (context, m, _) => SegmentedButton<ThemeMode>(
+                    showSelectedIcon: false,
+                    style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                    segments: const [
+                      ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined, size: 16), tooltip: 'Terang'),
+                      ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined, size: 16), tooltip: 'Gelap'),
+                      ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_outlined, size: 16), tooltip: 'Ikuti perangkat'),
+                    ],
+                    selected: {m},
+                    onSelectionChanged: (s) => ThemeController.set(s.first),
+                  ),
+                ),
               ),
               _NavTile(label: 'Panduan', icon: Icons.help_outline, selected: false, onTap: () => showHelpSheet(context, HelpTopic.guide)),
               _NavTile(label: 'Keluar', icon: Icons.logout, selected: false, onTap: () => supabase.auth.signOut()),

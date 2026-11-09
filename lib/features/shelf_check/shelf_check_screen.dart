@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../core/photo_capture.dart';
 import '../../core/signed_photo.dart';
 import '../../core/supabase_client.dart';
+import 'shelf_actions.dart';
 
 /// Shelf Check: photograph a product aisle, get a detailed AI read of it.
 /// The photo goes to the osa-photos bucket (own folder), then the shelf-check
@@ -50,7 +51,8 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
           .eq('is_active', true);
       final hist = await supabase
           .from('shelf_checks')
-          .select('id, summary, analysis, photo_path, created_at, stores(name)')
+          .select('id, employee_id, summary, analysis, photo_path, created_at, stores(name), '
+              'shelf_check_actions(actions)')
           .eq('employee_id', uid)
           .order('created_at', ascending: false)
           .limit(10);
@@ -107,6 +109,10 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  static int _actionCount(Map<String, dynamic> h) =>
+      shelfActionCodes(firstRelation(h['shelf_check_actions'])?['actions'])
+          .length;
 
   @override
   Widget build(BuildContext context) {
@@ -177,11 +183,12 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
                             Text('${(h['stores'] as Map?)?['name'] ?? 'Toko'}'),
                         subtitle: Text(
                           '${DateFormat('dd MMM HH:mm').format(DateTime.parse(h['created_at']).toLocal())}'
-                          '${h['summary'] != null ? '\n${h['summary']}' : ''}',
-                          maxLines: 3,
+                          '${h['summary'] != null ? '\n${h['summary']}' : ''}'
+                          '${_actionCount(h) > 0 ? '\n${_actionCount(h)} tindakan dicatat' : '\nBelum ada catatan tindakan'}',
+                          maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        isThreeLine: h['summary'] != null,
+                        isThreeLine: true,
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
@@ -278,6 +285,15 @@ class ShelfResultScreen extends StatelessWidget {
               const SizedBox(width: 8),
               stat('Facing terlihat', shelf['total_facings']?.toString()),
             ]),
+          ],
+          if (check['id'] != null) ...[
+            _Heading(check['employee_id'] == supabase.auth.currentUser?.id
+                ? 'Yang kamu kerjakan di rak'
+                : 'Tindakan sales di rak'),
+            ShelfActionsCard(
+              shelfCheckId: check['id'] as String,
+              canEdit: check['employee_id'] == supabase.auth.currentUser?.id,
+            ),
           ],
           _Heading('Tindakan utama'),
           if (actions.isEmpty) const Text('Tidak ada tindakan disarankan.'),

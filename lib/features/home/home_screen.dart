@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
 import '../../core/supabase_client.dart';
@@ -6,12 +7,17 @@ import '../admin/store_assignment_screen.dart';
 import '../admin/store_management_screen.dart';
 import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
+import '../execution/campaign_management_screen.dart';
+import '../execution/execution_form_screen.dart';
+import '../execution/execution_gallery_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
 import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
+import '../reports/daily_visit_summary_screen.dart';
+import '../reports/shelf_check_report_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
 import '../shell/desktop_shell.dart';
@@ -92,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Zonein'),
         actions: [
+          const ThemeButton(),
           const HelpButton(HelpTopic.guide),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -173,6 +180,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () => _push(context, const ShelfCheckScreen()),
                     ),
                     _MenuRow(
+                      icon: Icons.campaign_outlined,
+                      label: 'Laporan Eksekusi',
+                      subtitle: 'foto poster dan materi kampanye di toko',
+                      onTap: () => _push(context, const ExecutionFormScreen()),
+                    ),
+                    _MenuRow(
                       icon: Icons.point_of_sale,
                       label: 'Input Penjualan',
                       subtitle: 'catat unit terjual per toko dan tanggal',
@@ -221,6 +234,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             _push(context, const StoreAssignmentScreen()),
                       ),
                       _MenuRow(
+                        icon: Icons.photo_library_outlined,
+                        label: 'Galeri Foto',
+                        subtitle:
+                            'foto lapangan dengan filter kampanye, bulan, salesman; plus peringkat',
+                        onTap: () =>
+                            _push(context, const ExecutionGalleryScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.campaign,
+                        label: 'Kampanye',
+                        subtitle: 'tambah kampanye dan atur foto yang diminta',
+                        onTap: () =>
+                            _push(context, const CampaignManagementScreen()),
+                      ),
+                      _MenuRow(
                         icon: Icons.fact_check,
                         label: 'Tinjau Pengajuan Cuti',
                         subtitle: 'setujui atau tolak cuti karyawan',
@@ -241,6 +269,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             'kunjungan sales, jarak dari toko, di dalam atau luar zona',
                         onTap: () =>
                             _push(context, const StoreVisitReportScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.photo_library_outlined,
+                        label: 'Laporan Cek Rak',
+                        subtitle:
+                            'foto rak semua sales dan tindakan yang mereka catat',
+                        onTap: () =>
+                            _push(context, const ShelfCheckReportScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.fact_check,
+                        label: 'Ringkasan Kunjungan Harian',
+                        subtitle:
+                            'toko dikunjungi dan toko minta restock per salesman',
+                        onTap: () =>
+                            _push(context, const DailyVisitSummaryScreen()),
                       ),
                     ],
                     if (isAdminAccount) ...[
