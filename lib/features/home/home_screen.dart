@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
 import '../../core/supabase_client.dart';
@@ -97,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Zonein'),
         actions: [
+          const ThemeButton(),
           const HelpButton(HelpTopic.guide),
           IconButton(
             icon: const Icon(Icons.logout),

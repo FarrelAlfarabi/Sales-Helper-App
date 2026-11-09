@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
 import '../../core/supabase_client.dart';
@@ -157,6 +158,23 @@ class _DesktopShellState extends State<DesktopShell> {
                   Text(widget.name, style: t.bodyMedium?.copyWith(fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
                   Text(widget.roleLabel, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
                 ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: ValueListenableBuilder<ThemeMode>(
+                  valueListenable: ThemeController.mode,
+                  builder: (context, m, _) => SegmentedButton<ThemeMode>(
+                    showSelectedIcon: false,
+                    style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                    segments: const [
+                      ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined, size: 16), tooltip: 'Terang'),
+                      ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined, size: 16), tooltip: 'Gelap'),
+                      ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_outlined, size: 16), tooltip: 'Ikuti perangkat'),
+                    ],
+                    selected: {m},
+                    onSelectionChanged: (s) => ThemeController.set(s.first),
+                  ),
+                ),
               ),
               _NavTile(label: 'Panduan', icon: Icons.help_outline, selected: false, onTap: () => showHelpSheet(context, HelpTopic.guide)),
               _NavTile(label: 'Keluar', icon: Icons.logout, selected: false, onTap: () => supabase.auth.signOut()),

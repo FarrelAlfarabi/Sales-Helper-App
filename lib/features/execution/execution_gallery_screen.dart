@@ -156,6 +156,7 @@ class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
           }
         }
       }
+      if (!mounted) return;
       setState(() {
         _entries
           ..clear()
@@ -165,9 +166,9 @@ class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
           ..addAll(urls);
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat galeri: $e');
+      if (mounted) setState(() => _error = 'Gagal memuat galeri: $e');
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -216,7 +217,11 @@ class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(padding: const EdgeInsets.all(16), children: [
-                if (_error != null) Text(_error!, style: TextStyle(color: cs.error)),
+                if (_error != null)
+                  Row(children: [
+                    Expanded(child: Text(_error!, style: TextStyle(color: cs.error))),
+                    TextButton.icon(onPressed: _load, icon: const Icon(Icons.refresh), label: const Text('Coba lagi')),
+                  ]),
                 SegmentedButton<_Source>(
                   showSelectedIcon: false,
                   segments: const [

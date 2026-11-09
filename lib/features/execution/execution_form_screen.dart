@@ -28,6 +28,15 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   bool _submitting = false;
   bool _saved = false;
   String? _error;
+  final _storeCtrl = TextEditingController();
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _storeCtrl.dispose();
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -59,9 +68,9 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         _salesName = '${(res[2] as Map)['full_name'] ?? ''}';
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat data: $e');
+      if (mounted) setState(() => _error = 'Gagal memuat data: $e');
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -91,7 +100,9 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
       final f = await PhotoCapture.capture(source: source);
       if (f == null) return;
       final bytes = await f.readAsBytes();
+      if (!mounted) return;
       setState(() {
+        _error = null;
         _photos[slot] = f;
         _previews[slot] = bytes;
       });
@@ -142,12 +153,19 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         for (var i = 0; i < slots.length; i++)
           {'report_id': report['id'], 'slot_label': slots[i], 'photo_path': uploaded[i]},
       ]);
+      if (!mounted) return;
+      _storeCtrl.clear();
       setState(() {
         _saved = true;
         _storeId = null;
         _photos.clear();
         _previews.clear();
       });
+      if (_scroll.hasClients) {
+        _scroll.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Laporan terkirim. Pilih toko berikutnya untuk lanjut.')));
     } on PostgrestException catch (e) {
       setState(() => _error = e.code == '23505'
           ? 'Toko ini sudah punya laporan untuk kampanye dan bulan yang sama.'
@@ -155,7 +173,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     } catch (e) {
       setState(() => _error = 'Gagal menyimpan laporan: $e');
     } finally {
-      setState(() => _submitting = false);
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
@@ -173,7 +191,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
-                child: ListView(padding: const EdgeInsets.all(16), children: [
+                child: ListView(controller: _scroll, padding: const EdgeInsets.all(16), children: [
                   if (_saved)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -223,6 +241,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
                       requestFocusOnTap: true,
                       label: const Text('Cari toko *'),
                       helperText: _stores.isEmpty ? 'Kamu belum punya toko tugas.' : null,
+                      controller: _storeCtrl,
                       initialSelection: _storeId,
                       dropdownMenuEntries: [
                         for (final s in _stores)
@@ -253,6 +272,11 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(_error!, style: TextStyle(color: cs.error)),
+                    ),
+                  if (_campaigns.isEmpty && _error != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(onPressed: _load, icon: const Icon(Icons.refresh), label: const Text('Coba lagi')),
                     ),
                   const SizedBox(height: 16),
                   FilledButton(
