@@ -25,6 +25,7 @@ import '../reports/shelf_check_report_screen.dart';
 import '../reports/store_visit_report_screen.dart';
 import '../store_visit/store_visit_screen.dart';
 import '../shell/desktop_shell.dart';
+import '../today/today_screen.dart';
 import '../summary/summary_screen.dart';
 
 // Gates the "Tambah Karyawan" tile specifically to this one account, per an
@@ -112,6 +113,11 @@ class _HomeScreenState extends State<HomeScreen> with SafeSetState<HomeScreen> {
         name: displayName,
         roleLabel: roleLabel,
       );
+    }
+
+    // Ponsel, sales: satu layar "Hari ini" dengan langkah berikutnya.
+    if (!_loadingRole && !_isManagerOrAdmin) {
+      return TodayScreen(name: displayName);
     }
 
     return Scaffold(

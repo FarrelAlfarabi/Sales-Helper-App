@@ -3,6 +3,7 @@ import '../../core/help.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/location.dart';
 import '../../core/photo_capture.dart';
 import '../../core/supabase_client.dart';
 import '../osa/osa_screen.dart';
@@ -20,7 +21,10 @@ import '../osa/osa_screen.dart';
 /// Not run on a real device -- no Flutter SDK available in this
 /// environment. Needs verification on actual hardware before shipping.
 class StoreVisitScreen extends StatefulWidget {
-  const StoreVisitScreen({super.key});
+  const StoreVisitScreen({super.key, this.initialStoreId});
+
+  /// Toko yang dipilih dari beranda "Hari ini".
+  final String? initialStoreId;
 
   @override
   State<StoreVisitScreen> createState() => _StoreVisitScreenState();
@@ -28,7 +32,9 @@ class StoreVisitScreen extends StatefulWidget {
 
 class _StoreVisitScreenState extends State<StoreVisitScreen> with SafeSetState<StoreVisitScreen> {
   List<Map<String, dynamic>> _assignedStores = [];
-  String? _selectedStoreId;
+  late String? _selectedStoreId = widget.initialStoreId;
+  Position? _pos;
+  bool _suggested = false;
   bool _loading = true;
   bool _submitting = false;
   String? _error;
@@ -48,18 +54,45 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> with SafeSetState<S
       final userId = supabase.auth.currentUser!.id;
       final rows = await supabase
           .from('store_assignments')
-          .select('store_id, stores(id, name, code)')
+          .select('store_id, stores(id, name, code, latitude, longitude, geofence_radius_meters, is_active)')
           .eq('employee_id', userId)
           .eq('is_active', true);
       setState(() {
-        _assignedStores =
-            rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
+        _assignedStores = [
+          for (final r in rows)
+            if (r['stores'] != null && (r['stores'] as Map)['is_active'] != false)
+              Map<String, dynamic>.from(r['stores'] as Map),
+        ];
+        if (!_assignedStores.any((s) => s['id'] == _selectedStoreId)) {
+          _selectedStoreId = null;
+        }
       });
+      _suggestNearest();
     } catch (e) {
       setState(() => _error = 'Gagal memuat toko tugas: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  /// Urutkan toko dari yang terdekat dan pilih otomatis yang paling dekat,
+  /// kecuali sales sudah memilih toko dari beranda.
+  Future<void> _suggestNearest() async {
+    final pos = await tryCurrentPosition(askPermission: true);
+    if (pos == null || !mounted) return;
+    setState(() {
+      _pos = pos;
+      _assignedStores.sort((a, b) =>
+          (distanceToStore(pos, a) ?? double.infinity)
+              .compareTo(distanceToStore(pos, b) ?? double.infinity));
+      if (_selectedStoreId == null && _assignedStores.isNotEmpty) {
+        final d = distanceToStore(pos, _assignedStores.first);
+        if (d != null && d <= 1000) {
+          _selectedStoreId = _assignedStores.first['id'] as String;
+          _suggested = true;
+        }
+      }
+    });
   }
 
   Future<void> _submitVisit() async {
@@ -134,7 +167,10 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> with SafeSetState<S
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => OsaScreen(
-              storeVisitId: inserted['id'] as String, notice: notice),
+              storeVisitId: inserted['id'] as String,
+              storeId: _selectedStoreId!,
+              storeName: '${_assignedStores.firstWhere((s) => s['id'] == _selectedStoreId, orElse: () => {})['name'] ?? ''}',
+              notice: notice),
         ),
       );
     } catch (e) {
@@ -165,12 +201,33 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> with SafeSetState<S
                         initialValue: _selectedStoreId,
                         decoration: const InputDecoration(labelText: 'Toko'),
                         items: _assignedStores
-                            .map((s) => DropdownMenuItem(
-                                  value: s['id'] as String,
-                                  child: Text('${s['name']} (${s['code']})'),
-                                ))
+                            .map((s) {
+                              final d = distanceToStore(_pos, s);
+                              return DropdownMenuItem(
+                                value: s['id'] as String,
+                                child: Text(
+                                  '${s['name']}${d == null ? '' : ' · ${fmtDistance(d)}'}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            })
                             .toList(),
-                        onChanged: (v) => setState(() => _selectedStoreId = v),
+                        onChanged: (v) => setState(() {
+                          _selectedStoreId = v;
+                          _suggested = false;
+                        }),
+                      ),
+                      if (_suggested)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text('Dipilih otomatis: toko terdekat dari lokasimu.',
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Langkahnya: ambil foto depan toko, lokasi dicatat otomatis, lalu isi foto rak.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 20),
                       if (_error != null) ...[
@@ -182,7 +239,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> with SafeSetState<S
                       FilledButton.icon(
                         icon: const Icon(Icons.camera_alt),
                         label: Text(
-                            _submitting ? 'Mengirim...' : 'Kirim Kunjungan'),
+                            _submitting ? 'Mengirim...' : 'Foto toko dan check-in'),
                         onPressed: _submitting ? null : _submitVisit,
                       ),
                     ],

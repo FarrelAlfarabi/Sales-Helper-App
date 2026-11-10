@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/help.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/product_field.dart';
 import '../../core/supabase_client.dart';
 
 /// Pricing: a field rep records the shelf price of a product at an assigned
@@ -9,7 +10,10 @@ import '../../core/supabase_client.dart';
 /// it, so this is a simple price check (store, product, price, promo flag),
 /// not a copy of ViewLT. Needs migration 20261026100000_price_reports.sql.
 class PricingScreen extends StatefulWidget {
-  const PricingScreen({super.key});
+  const PricingScreen({super.key, this.initialStoreId});
+
+  /// Toko yang sudah dipilih (dibuka dari alur kunjungan toko).
+  final String? initialStoreId;
 
   @override
   State<PricingScreen> createState() => _PricingScreenState();
@@ -21,7 +25,7 @@ class _PricingScreenState extends State<PricingScreen> with SafeSetState<Pricing
   final _price = TextEditingController();
   List<Map<String, dynamic>> _stores = [];
   List<Map<String, dynamic>> _recent = [];
-  String? _storeId;
+  late String? _storeId = widget.initialStoreId;
   bool _promo = false;
   bool _loading = true;
   bool _saving = false;
@@ -59,6 +63,7 @@ class _PricingScreenState extends State<PricingScreen> with SafeSetState<Pricing
       setState(() {
         _stores = stores;
         _recent = List<Map<String, dynamic>>.from(recent);
+        if (!stores.any((s) => s['id'] == _storeId)) _storeId = null;
         _storeId ??= stores.isEmpty ? null : stores.first['id'] as String;
       });
     } catch (e) {
@@ -129,14 +134,7 @@ class _PricingScreenState extends State<PricingScreen> with SafeSetState<Pricing
                           onChanged: (v) => setState(() => _storeId = v),
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _product,
-                          decoration:
-                              const InputDecoration(labelText: 'Produk'),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Produk wajib diisi'
-                              : null,
-                        ),
+                        ProductField(controller: _product),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _price,

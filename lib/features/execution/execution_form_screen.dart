@@ -9,7 +9,10 @@ import '../../core/supabase_client.dart';
 /// Rep (dan manajer): kirim laporan eksekusi kampanye. Pilih kampanye, bulan,
 /// toko, lalu foto untuk setiap slot yang ditentukan kampanye.
 class ExecutionFormScreen extends StatefulWidget {
-  const ExecutionFormScreen({super.key});
+  const ExecutionFormScreen({super.key, this.initialStoreId});
+
+  /// Toko yang sudah dipilih (dibuka dari alur kunjungan toko).
+  final String? initialStoreId;
 
   @override
   State<ExecutionFormScreen> createState() => _ExecutionFormScreenState();
@@ -19,7 +22,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> with SafeSetS
   List<Map<String, dynamic>> _campaigns = [];
   List<Map<String, dynamic>> _stores = [];
   String? _campaignId;
-  String? _storeId;
+  late String? _storeId = widget.initialStoreId;
   late DateTime _month;
   final Map<int, XFile> _photos = {};
   final Map<int, Uint8List> _previews = {};
@@ -66,6 +69,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> with SafeSetS
         _campaigns = List<Map<String, dynamic>>.from(res[0] as List);
         _stores = stores;
         _salesName = '${(res[2] as Map)['full_name'] ?? ''}';
+        if (!stores.any((s) => s['id'] == _storeId)) _storeId = null;
       });
     } catch (e) {
       if (mounted) setState(() => _error = 'Gagal memuat data: ${friendlyError(e)}');
