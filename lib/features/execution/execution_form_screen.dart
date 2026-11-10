@@ -15,7 +15,7 @@ class ExecutionFormScreen extends StatefulWidget {
   State<ExecutionFormScreen> createState() => _ExecutionFormScreenState();
 }
 
-class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
+class _ExecutionFormScreenState extends State<ExecutionFormScreen> with SafeSetState<ExecutionFormScreen> {
   List<Map<String, dynamic>> _campaigns = [];
   List<Map<String, dynamic>> _stores = [];
   String? _campaignId;
@@ -68,7 +68,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         _salesName = '${(res[2] as Map)['full_name'] ?? ''}';
       });
     } catch (e) {
-      if (mounted) setState(() => _error = 'Gagal memuat data: $e');
+      if (mounted) setState(() => _error = 'Gagal memuat data: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -107,7 +107,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         _previews[slot] = bytes;
       });
     } catch (e) {
-      setState(() => _error = 'Foto gagal diambil: $e');
+      setState(() => _error = 'Foto gagal diambil: ${friendlyError(e)}');
     }
   }
 
@@ -169,9 +169,9 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     } on PostgrestException catch (e) {
       setState(() => _error = e.code == '23505'
           ? 'Toko ini sudah punya laporan untuk kampanye dan bulan yang sama.'
-          : 'Gagal menyimpan laporan: ${e.message}');
+          : 'Gagal menyimpan laporan: ${friendlyError(e)}');
     } catch (e) {
-      setState(() => _error = 'Gagal menyimpan laporan: $e');
+      setState(() => _error = 'Gagal menyimpan laporan: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

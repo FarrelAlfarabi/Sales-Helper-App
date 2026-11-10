@@ -3,6 +3,7 @@ import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
 import '../../core/supabase_client.dart';
+import '../account/change_password_dialog.dart';
 import '../admin/store_assignment_screen.dart';
 import '../admin/store_management_screen.dart';
 import '../admin/user_management_screen.dart';
@@ -11,6 +12,7 @@ import '../dashboard/dashboard_screen.dart';
 import '../execution/campaign_management_screen.dart';
 import '../execution/execution_form_screen.dart';
 import '../execution/execution_gallery_screen.dart';
+import '../insights/insights_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
@@ -58,7 +60,7 @@ class DesktopShell extends StatefulWidget {
   State<DesktopShell> createState() => _DesktopShellState();
 }
 
-class _DesktopShellState extends State<DesktopShell> {
+class _DesktopShellState extends State<DesktopShell> with SafeSetState<DesktopShell> {
   late final List<_Group> _groups = _buildGroups();
   late _Item _current = _groups.first.items.first;
 
@@ -91,6 +93,7 @@ class _DesktopShellState extends State<DesktopShell> {
         _Item('Galeri foto', Icons.photo_library_outlined, () => const ExecutionGalleryScreen()),
         _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckReportScreen()),
         _Item('Penjualan dan harga', Icons.bar_chart_outlined, () => const SalesPriceScreen()),
+        _Item('Wawasan AI', Icons.auto_awesome_outlined, () => const InsightsScreen()),
       ]),
       _Group('Orang dan toko', [
         _Item('Persetujuan cuti', Icons.fact_check_outlined, () => const LeaveReviewScreen()),
@@ -177,7 +180,8 @@ class _DesktopShellState extends State<DesktopShell> {
                 ),
               ),
               _NavTile(label: 'Panduan', icon: Icons.help_outline, selected: false, onTap: () => showHelpSheet(context, HelpTopic.guide)),
-              _NavTile(label: 'Keluar', icon: Icons.logout, selected: false, onTap: () => supabase.auth.signOut()),
+              _NavTile(label: 'Ganti kata sandi', icon: Icons.lock_outline, selected: false, onTap: () => showChangePasswordDialog(context)),
+              _NavTile(label: 'Keluar', icon: Icons.logout, selected: false, onTap: () => confirmSignOut(context)),
             ]),
           ),
         ),

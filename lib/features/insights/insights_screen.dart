@@ -16,7 +16,7 @@ class InsightsScreen extends StatefulWidget {
   State<InsightsScreen> createState() => _InsightsScreenState();
 }
 
-class _InsightsScreenState extends State<InsightsScreen> {
+class _InsightsScreenState extends State<InsightsScreen> with SafeSetState<InsightsScreen> {
   int _days = 30;
   bool _loading = true;
   bool _busy = false;
@@ -44,7 +44,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           _row = rows.isEmpty ? null : Map<String, dynamic>.from(rows.first));
       await _loadUsage();
     } catch (e) {
-      setState(() => _error = 'Gagal memuat: $e');
+      setState(() => _error = 'Gagal memuat: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -81,10 +81,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
       setState(() => _row = Map<String, dynamic>.from(data['insight'] as Map));
       await _loadUsage();
     } on FunctionException catch (e) {
-      setState(() =>
-          _error = 'Gagal membuat: ${e.details ?? e.reasonPhrase ?? e.status}');
+      setState(() => _error = 'Gagal membuat wawasan. ${friendlyError(e)}');
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -15,7 +15,7 @@ class PricingScreen extends StatefulWidget {
   State<PricingScreen> createState() => _PricingScreenState();
 }
 
-class _PricingScreenState extends State<PricingScreen> {
+class _PricingScreenState extends State<PricingScreen> with SafeSetState<PricingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _product = TextEditingController();
   final _price = TextEditingController();
@@ -62,7 +62,7 @@ class _PricingScreenState extends State<PricingScreen> {
         _storeId ??= stores.isEmpty ? null : stores.first['id'] as String;
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat: $e');
+      setState(() => _error = 'Gagal memuat: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -86,8 +86,9 @@ class _PricingScreenState extends State<PricingScreen> {
       _price.clear();
       setState(() => _promo = false);
       await _load();
+      if (mounted) showToast(context, 'Harga tersimpan.');
     } catch (e) {
-      setState(() => _error = 'Gagal menyimpan: $e');
+      setState(() => _error = 'Gagal menyimpan: ${friendlyError(e)}');
     } finally {
       setState(() => _saving = false);
     }
@@ -143,8 +144,8 @@ class _PricingScreenState extends State<PricingScreen> {
                           decoration: const InputDecoration(
                               labelText: 'Harga rak (Rp)'),
                           validator: (v) =>
-                              int.tryParse((v ?? '').trim()) == null
-                                  ? 'Isi dengan bilangan bulat'
+                              (int.tryParse((v ?? '').trim()) ?? 0) <= 0
+                                  ? 'Isi dengan angka bulat lebih dari 0, tanpa titik'
                                   : null,
                         ),
                         SwitchListTile(
@@ -165,6 +166,11 @@ class _PricingScreenState extends State<PricingScreen> {
                   ),
                 const SizedBox(height: 24),
                 Text('Terbaru', style: Theme.of(context).textTheme.titleSmall),
+                if (_recent.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Belum ada harga yang kamu laporkan.'),
+                  ),
                 for (final r in _recent)
                   ListTile(
                     contentPadding: EdgeInsets.zero,

@@ -10,7 +10,7 @@ class CampaignManagementScreen extends StatefulWidget {
   State<CampaignManagementScreen> createState() => _CampaignManagementScreenState();
 }
 
-class _CampaignManagementScreenState extends State<CampaignManagementScreen> {
+class _CampaignManagementScreenState extends State<CampaignManagementScreen> with SafeSetState<CampaignManagementScreen> {
   List<Map<String, dynamic>> _rows = [];
   bool _loading = true;
   String? _error;
@@ -30,7 +30,7 @@ class _CampaignManagementScreenState extends State<CampaignManagementScreen> {
       final rows = await supabase.from('campaigns').select('id, name, photo_slots, is_active').order('name');
       setState(() => _rows = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat kampanye: $e');
+      setState(() => _error = 'Gagal memuat kampanye: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -82,7 +82,7 @@ class _CampaignManagementScreenState extends State<CampaignManagementScreen> {
       }
       await _load();
     } catch (e) {
-      setState(() => _error = 'Gagal menyimpan kampanye: $e');
+      setState(() => _error = 'Gagal menyimpan kampanye: ${friendlyError(e)}');
     }
   }
 
@@ -91,7 +91,7 @@ class _CampaignManagementScreenState extends State<CampaignManagementScreen> {
       await supabase.from('campaigns').update({'is_active': active}).eq('id', row['id']);
       await _load();
     } catch (e) {
-      setState(() => _error = 'Gagal mengubah status: $e');
+      setState(() => _error = 'Gagal mengubah status: ${friendlyError(e)}');
     }
   }
 

@@ -20,7 +20,7 @@ class StoreManagementScreen extends StatefulWidget {
   State<StoreManagementScreen> createState() => _StoreManagementScreenState();
 }
 
-class _StoreManagementScreenState extends State<StoreManagementScreen> {
+class _StoreManagementScreenState extends State<StoreManagementScreen> with SafeSetState<StoreManagementScreen> {
   List<Map<String, dynamic>> _stores = [];
   bool _loading = true;
   String? _error;
@@ -40,7 +40,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       final rows = await supabase.from('stores').select().order('name');
       setState(() => _stores = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat toko: $e');
+      setState(() => _error = 'Gagal memuat toko: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -91,14 +91,20 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                     Text(_error!,
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.error)),
+                  if (_stores.isEmpty && _error == null)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 32),
+                      child: Center(
+                          child: Text('Belum ada toko. Tambahkan yang pertama.')),
+                    ),
                   for (final s in _stores)
                     Card(
                       child: ListTile(
                         title: Text('${s['name']} (${s['code']})'),
                         subtitle: Text(
                           '${s['address'] ?? 'No address'}\n'
-                          'Geofence: ${s['geofence_radius_meters']}m radius'
-                          '${s['is_active'] == false ? ' -- INACTIVE' : ''}',
+                          'Radius zona: ${s['geofence_radius_meters']} m'
+                          '${s['is_active'] == false ? ' · Nonaktif' : ''}',
                         ),
                         isThreeLine: true,
                       ),
@@ -117,7 +123,7 @@ class _NewStoreSheet extends StatefulWidget {
   State<_NewStoreSheet> createState() => _NewStoreSheetState();
 }
 
-class _NewStoreSheetState extends State<_NewStoreSheet> {
+class _NewStoreSheetState extends State<_NewStoreSheet> with SafeSetState<_NewStoreSheet> {
   final _formKey = GlobalKey<FormState>();
   final _codeController = TextEditingController();
   final _nameController = TextEditingController();
@@ -160,7 +166,7 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
       });
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -228,7 +234,7 @@ class _NewStoreSheetState extends State<_NewStoreSheet> {
             TextFormField(
               controller: _radiusController,
               decoration:
-                  const InputDecoration(labelText: 'Radius geofence (meter)'),
+                  const InputDecoration(labelText: 'Radius zona (meter)'),
               keyboardType: TextInputType.number,
               validator: (v) =>
                   int.tryParse(v ?? '') == null ? 'Tidak valid' : null,

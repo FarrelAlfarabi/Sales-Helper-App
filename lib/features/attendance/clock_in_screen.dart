@@ -28,7 +28,7 @@ class ClockInScreen extends StatefulWidget {
   State<ClockInScreen> createState() => _ClockInScreenState();
 }
 
-class _ClockInScreenState extends State<ClockInScreen> {
+class _ClockInScreenState extends State<ClockInScreen> with SafeSetState<ClockInScreen> {
   Map<String, dynamic>? _openRecord;
   bool _loading = true;
   bool _submitting = false;
@@ -55,10 +55,10 @@ class _ClockInScreenState extends State<ClockInScreen> {
           .order('clock_in_at', ascending: false)
           .limit(1);
       setState(() {
-        _openRecord = rows.isEmpty ? null : rows.first as Map<String, dynamic>;
+        _openRecord = rows.isEmpty ? null : rows.first;
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat status absensi: $e');
+      setState(() => _error = 'Gagal memuat status absensi: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -129,8 +129,9 @@ class _ClockInScreenState extends State<ClockInScreen> {
       });
 
       await _loadOpenRecord();
+      if (mounted) showToast(context, 'Absen masuk tercatat.');
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       setState(() => _submitting = false);
     }
@@ -160,8 +161,9 @@ class _ClockInScreenState extends State<ClockInScreen> {
       }).eq('id', _openRecord!['id']);
 
       await _loadOpenRecord();
+      if (mounted) showToast(context, 'Absen pulang tercatat.');
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       setState(() => _submitting = false);
     }
@@ -214,7 +216,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
                           if (isClockedIn) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'sejak ${_openRecord!['clock_in_at']}',
+                              'sejak ${fmtDateTime(_openRecord!['clock_in_at'])}',
                               style: Theme.of(context).textTheme.bodySmall,
                               textAlign: TextAlign.center,
                             ),

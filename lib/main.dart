@@ -57,13 +57,12 @@ class BootGate extends StatefulWidget {
   State<BootGate> createState() => _BootGateState();
 }
 
-class _BootGateState extends State<BootGate> {
+class _BootGateState extends State<BootGate> with core.SafeSetState<BootGate> {
   late final Future<void> _init = core.initSupabase().timeout(
         const Duration(seconds: 15),
         onTimeout: () => throw Exception(
-          'Koneksi ke Supabase habis waktu setelah 15 detik. Periksa jaringan '
-          'dan pastikan --dart-define=SUPABASE_URL dan '
-          '--dart-define=SUPABASE_ANON_KEY sudah diberikan dengan benar.',
+          'Server tidak merespons setelah 15 detik. Periksa koneksi internet '
+          'lalu muat ulang halaman.',
         ),
       );
 
@@ -82,7 +81,7 @@ class _BootGateState extends State<BootGate> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Gagal memulai Zonein:\n${snapshot.error}',
+                  'Gagal memulai Zonein.\n${core.friendlyError(snapshot.error!)}',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -104,7 +103,7 @@ class AuthGate extends StatefulWidget {
   State<AuthGate> createState() => _AuthGateState();
 }
 
-class _AuthGateState extends State<AuthGate> {
+class _AuthGateState extends State<AuthGate> with core.SafeSetState<AuthGate> {
   late final Stream<AuthState> _authStateStream =
       core.supabase.auth.onAuthStateChange;
 

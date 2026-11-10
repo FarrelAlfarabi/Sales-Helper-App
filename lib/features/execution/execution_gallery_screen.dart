@@ -44,7 +44,7 @@ class _Entry {
   final List<_Photo> photos;
 }
 
-class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
+class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> with SafeSetState<ExecutionGalleryScreen> {
   static const _all = '__all__';
 
   final List<_Entry> _entries = [];
@@ -166,7 +166,7 @@ class _ExecutionGalleryScreenState extends State<ExecutionGalleryScreen> {
           ..addAll(urls);
       });
     } catch (e) {
-      if (mounted) setState(() => _error = 'Gagal memuat galeri: $e');
+      if (mounted) setState(() => _error = 'Gagal memuat galeri: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -592,7 +592,7 @@ class _Lightbox extends StatefulWidget {
   State<_Lightbox> createState() => _LightboxState();
 }
 
-class _LightboxState extends State<_Lightbox> {
+class _LightboxState extends State<_Lightbox> with SafeSetState<_Lightbox> {
   late final PageController _c = PageController(initialPage: widget.start);
   late int _i = widget.start;
 

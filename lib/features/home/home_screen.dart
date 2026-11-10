@@ -3,17 +3,21 @@ import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
 import '../../core/supabase_client.dart';
+import '../account/change_password_dialog.dart';
 import '../admin/store_assignment_screen.dart';
 import '../admin/store_management_screen.dart';
 import '../admin/user_management_screen.dart';
 import '../attendance/clock_in_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 import '../execution/campaign_management_screen.dart';
 import '../execution/execution_form_screen.dart';
 import '../execution/execution_gallery_screen.dart';
+import '../insights/insights_screen.dart';
 import '../leave/leave_review_screen.dart';
 import '../leave/leave_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../reports/attendance_report_screen.dart';
+import '../reports/sales_price_screen.dart';
 import '../sales/sales_entry_screen.dart';
 import '../shelf_check/shelf_check_screen.dart';
 import '../reports/daily_visit_summary_screen.dart';
@@ -43,10 +47,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SafeSetState<HomeScreen> {
   bool _isManagerOrAdmin = false;
   bool _loadingRole = true;
   String? _fullName;
+  String _role = 'field_rep';
 
   @override
   void initState() {
@@ -65,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isManagerOrAdmin = row['role'] == 'manager' || row['role'] == 'admin';
         _fullName = row['full_name'] as String?;
+        _role = (row['role'] as String?) ?? 'field_rep';
       });
     } catch (_) {
       // Role check failing just hides manager tiles -- RLS is still the
@@ -72,6 +78,12 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       setState(() => _loadingRole = false);
     }
+  }
+
+  /// Halaman dasbor web tidak punya AppBar sendiri (di layar lebar judulnya
+  /// ada di dalam lembar). Di ponsel perlu AppBar supaya ada tombol kembali.
+  void _pushBare(BuildContext context, Widget screen) {
+    _push(context, Scaffold(appBar: AppBar(), body: screen));
   }
 
   void _push(BuildContext context, Widget screen) {
@@ -83,14 +95,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final email = supabase.auth.currentUser?.email ?? '';
     final isAdminAccount = email.toLowerCase() == _kAdminEmail;
+    // Label peran mengikuti peran sebenarnya, bukan email: admin lain
+    // (bukan akun pemilik) dulu tampil sebagai "Manajer".
+    final roleLabel = kRoleLabels[_role] ?? 'Sales';
+    final displayName = (_fullName != null &&
+            _fullName!.trim().isNotEmpty &&
+            !_fullName!.contains('@'))
+        ? _fullName!.trim()
+        : email.split('@').first;
 
     // Layar lebar (laptop): sidebar + lembar kerja. Ponsel tetap memakai menu di bawah.
     if (!_loadingRole && MediaQuery.of(context).size.width >= 900) {
       return DesktopShell(
         isManager: _isManagerOrAdmin,
         isAdminAccount: isAdminAccount,
-        name: (_fullName != null && _fullName!.isNotEmpty) ? _fullName! : email,
-        roleLabel: isAdminAccount ? 'Admin' : (_isManagerOrAdmin ? 'Manajer' : 'Sales'),
+        name: displayName,
+        roleLabel: roleLabel,
       );
     }
 
@@ -100,10 +120,16 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           const ThemeButton(),
           const HelpButton(HelpTopic.guide),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Keluar',
-            onPressed: () => supabase.auth.signOut(),
+          PopupMenuButton<String>(
+            tooltip: 'Akun',
+            icon: const Icon(Icons.account_circle_outlined),
+            onSelected: (v) => v == 'password'
+                ? showChangePasswordDialog(context)
+                : confirmSignOut(context),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'password', child: Text('Ganti kata sandi')),
+              PopupMenuItem(value: 'logout', child: Text('Keluar')),
+            ],
           ),
         ],
         bottom: const HelpBar(HelpTopic.guide),
@@ -131,9 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .bodyMedium
                                         ?.copyWith(color: colorScheme.onSurfaceVariant)),
                                 Text(
-                                  (_fullName != null && _fullName!.isNotEmpty)
-                                      ? _fullName!
-                                      : email,
+                                  displayName,
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineSmall
@@ -149,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(99),
                             ),
                             child: Text(
-                              isAdminAccount ? 'Admin' : (_isManagerOrAdmin ? 'Manajer' : 'Sales'),
+                              roleLabel,
                               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                   color: colorScheme.primary, fontWeight: FontWeight.w600),
                             ),
@@ -218,6 +242,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     if (_isManagerOrAdmin) ...[
                       _SectionHeader('Alat Manajer'),
+                      _MenuRow(
+                        icon: Icons.space_dashboard_outlined,
+                        label: 'Dasbor',
+                        subtitle:
+                            'angka hari ini, kunjungan terbaru, dan hal yang perlu perhatian',
+                        onTap: () => _pushBare(context, const DashboardScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.bar_chart_outlined,
+                        label: 'Penjualan dan Harga',
+                        subtitle:
+                            'unit terjual per produk dan harga rak 30 hari terakhir',
+                        onTap: () => _pushBare(context, const SalesPriceScreen()),
+                      ),
+                      _MenuRow(
+                        icon: Icons.auto_awesome_outlined,
+                        label: 'Wawasan AI',
+                        subtitle:
+                            'ringkasan AI dari data penjualan, harga, dan rak',
+                        onTap: () => _push(context, const InsightsScreen()),
+                      ),
                       _MenuRow(
                         icon: Icons.store,
                         label: 'Kelola Toko',

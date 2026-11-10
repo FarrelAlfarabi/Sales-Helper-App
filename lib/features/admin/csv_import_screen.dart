@@ -77,7 +77,7 @@ class CsvImportScreen extends StatefulWidget {
   State<CsvImportScreen> createState() => _CsvImportScreenState();
 }
 
-class _CsvImportScreenState extends State<CsvImportScreen> {
+class _CsvImportScreenState extends State<CsvImportScreen> with SafeSetState<CsvImportScreen> {
   List<_Row>? _rows;
   String? _fileName;
   String? _error;
@@ -120,7 +120,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
           : await _checkAssignments(parsed);
       setState(() => _rows = rows);
     } catch (e) {
-      setState(() => _error = 'Gagal membaca berkas: $e');
+      setState(() => _error = 'Gagal membaca berkas: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -323,7 +323,7 @@ class _CsvImportScreenState extends State<CsvImportScreen> {
       });
     } catch (e) {
       setState(() => _error =
-          'Impor gagal, sebagian mungkin sudah masuk. Muat ulang daftar lalu cek. Detail: $e');
+          'Impor gagal, sebagian mungkin sudah masuk. Muat ulang daftar lalu cek. Detail: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _busy = false);
     }

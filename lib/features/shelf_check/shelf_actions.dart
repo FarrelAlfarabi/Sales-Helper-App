@@ -46,7 +46,7 @@ class ShelfActionsCard extends StatefulWidget {
   State<ShelfActionsCard> createState() => _ShelfActionsCardState();
 }
 
-class _ShelfActionsCardState extends State<ShelfActionsCard> {
+class _ShelfActionsCardState extends State<ShelfActionsCard> with SafeSetState<ShelfActionsCard> {
   final _note = TextEditingController();
   final Set<String> _selected = {};
   bool _loading = true;
@@ -84,7 +84,7 @@ class _ShelfActionsCardState extends State<ShelfActionsCard> {
         }
       });
     } catch (e) {
-      if (mounted) setState(() => _error = 'Gagal memuat catatan: $e');
+      if (mounted) setState(() => _error = 'Gagal memuat catatan: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -107,7 +107,7 @@ class _ShelfActionsCardState extends State<ShelfActionsCard> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Catatan tersimpan')));
     } catch (e) {
-      if (mounted) setState(() => _error = 'Gagal menyimpan: $e');
+      if (mounted) setState(() => _error = 'Gagal menyimpan: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -20,7 +20,7 @@ class ShelfCheckScreen extends StatefulWidget {
   State<ShelfCheckScreen> createState() => _ShelfCheckScreenState();
 }
 
-class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
+class _ShelfCheckScreenState extends State<ShelfCheckScreen> with SafeSetState<ShelfCheckScreen> {
   final _brands = TextEditingController();
   List<Map<String, dynamic>> _stores = [];
   List<Map<String, dynamic>> _history = [];
@@ -62,7 +62,7 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
         _storeId ??= _stores.isEmpty ? null : _stores.first['id'] as String;
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat: $e');
+      setState(() => _error = 'Gagal memuat: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -101,10 +101,9 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> {
       Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => ShelfResultScreen(check: check)));
     } on FunctionException catch (e) {
-      setState(() => _error =
-          'Analisis gagal: ${e.details ?? e.reasonPhrase ?? e.status}');
+      setState(() => _error = 'Analisis gagal. ${friendlyError(e)}');
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

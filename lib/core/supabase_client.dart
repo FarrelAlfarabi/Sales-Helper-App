@@ -8,6 +8,7 @@ import 'env.dart';
 // unresolved AuthException/FileOptions silently crashes the web compiler
 // instead of giving a clean error (found via a real `flutter run` failure).
 export 'package:supabase_flutter/supabase_flutter.dart';
+export 'ui_utils.dart';
 
 Future<void> initSupabase() async {
   await Supabase.initialize(

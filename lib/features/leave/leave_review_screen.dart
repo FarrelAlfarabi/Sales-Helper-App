@@ -15,7 +15,7 @@ class LeaveReviewScreen extends StatefulWidget {
   State<LeaveReviewScreen> createState() => _LeaveReviewScreenState();
 }
 
-class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
+class _LeaveReviewScreenState extends State<LeaveReviewScreen> with SafeSetState<LeaveReviewScreen> {
   List<Map<String, dynamic>> _pending = [];
   bool _loading = true;
   String? _error;
@@ -40,13 +40,18 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
           .order('start_date');
       setState(() => _pending = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat pengajuan: $e');
+      setState(() => _error = 'Gagal memuat pengajuan: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
   }
 
   Future<void> _review(String id, String status) async {
+    final ok = await confirmDialog(context,
+        title: status == 'approved' ? 'Setujui pengajuan ini?' : 'Tolak pengajuan ini?',
+        message: 'Keputusan tidak bisa diubah dari aplikasi.',
+        yes: status == 'approved' ? 'Setujui' : 'Tolak');
+    if (!ok) return;
     try {
       await supabase.from('leave_requests').update({
         'status': status,
@@ -54,8 +59,12 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
         'reviewed_at': DateTime.now().toUtc().toIso8601String(),
       }).eq('id', id);
       await _load();
+      if (mounted) {
+        showToast(context,
+            status == 'approved' ? 'Pengajuan disetujui.' : 'Pengajuan ditolak.');
+      }
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     }
   }
 
@@ -88,10 +97,10 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
                     Card(
                       child: ListTile(
                         title: Text(
-                          '${(r['profiles'] as Map?)?['full_name'] ?? 'Tidak diketahui'} -- ${r['leave_type']}',
+                          '${(r['profiles'] as Map?)?['full_name'] ?? 'Tidak diketahui'}, ${kLeaveTypeLabels[r['leave_type']] ?? r['leave_type']}',
                         ),
                         subtitle: Text(
-                          '${r['start_date']} to ${r['end_date']}'
+                          fmtDateRange(r['start_date'], r['end_date']) +
                           '${r['reason'] != null ? '\n${r['reason']}' : ''}',
                         ),
                         isThreeLine: r['reason'] != null,
@@ -99,12 +108,14 @@ class _LeaveReviewScreenState extends State<LeaveReviewScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              tooltip: 'Setujui',
                               icon: const Icon(Icons.check_circle,
                                   color: Colors.green),
                               onPressed: () =>
                                   _review(r['id'] as String, 'approved'),
                             ),
                             IconButton(
+                              tooltip: 'Tolak',
                               icon: const Icon(Icons.cancel, color: Colors.red),
                               onPressed: () =>
                                   _review(r['id'] as String, 'rejected'),

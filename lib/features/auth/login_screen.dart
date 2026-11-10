@@ -17,7 +17,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SafeSetState<LoginScreen> {
   bool _obscure = true;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -47,9 +47,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // On success, AuthGate's onAuthStateChange listener swaps to HomeScreen.
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      setState(() => _errorMessage = friendlyError(e));
     } catch (e) {
-      setState(() => _errorMessage = 'Gagal masuk: $e');
+      setState(() => _errorMessage = 'Gagal masuk: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -94,6 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.username],
                     decoration: const InputDecoration(labelText: 'Email'),
                     validator: (v) => (v == null || v.trim().isEmpty)
                         ? 'Email wajib diisi'
@@ -103,6 +105,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscure,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.password],
+                    onFieldSubmitted: (_) => _isSubmitting ? null : _signIn(),
                     decoration: InputDecoration(
                       labelText: 'Kata sandi',
                       suffixIcon: IconButton(
@@ -134,6 +139,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Masuk'),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Lupa kata sandi? Hubungi admin untuk mengatur ulang.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
