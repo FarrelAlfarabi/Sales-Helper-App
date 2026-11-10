@@ -15,7 +15,7 @@ class SalesEntryScreen extends StatefulWidget {
   State<SalesEntryScreen> createState() => _SalesEntryScreenState();
 }
 
-class _SalesEntryScreenState extends State<SalesEntryScreen> {
+class _SalesEntryScreenState extends State<SalesEntryScreen> with SafeSetState<SalesEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _product = TextEditingController();
   final _units = TextEditingController();
@@ -60,7 +60,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
         _storeId ??= _stores.isEmpty ? null : _stores.first['id'] as String;
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat: $e');
+      setState(() => _error = 'Gagal memuat: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -93,8 +93,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
       _product.clear();
       _units.clear();
       await _load();
+      if (mounted) showToast(context, 'Penjualan tersimpan.');
     } catch (e) {
-      setState(() => _error = 'Gagal menyimpan: $e');
+      setState(() => _error = 'Gagal menyimpan: ${friendlyError(e)}');
     } finally {
       setState(() => _saving = false);
     }
@@ -149,8 +150,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                           decoration:
                               const InputDecoration(labelText: 'Unit terjual'),
                           validator: (v) =>
-                              int.tryParse((v ?? '').trim()) == null
-                                  ? 'Isi dengan bilangan bulat'
+                              (int.tryParse((v ?? '').trim()) ?? 0) <= 0
+                                  ? 'Isi dengan angka bulat lebih dari 0'
                                   : null,
                         ),
                         const SizedBox(height: 8),
@@ -172,12 +173,17 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                   ),
                 const SizedBox(height: 24),
                 Text('Terbaru', style: Theme.of(context).textTheme.titleSmall),
+                if (_recent.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Belum ada penjualan yang kamu catat.'),
+                  ),
                 for (final r in _recent)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(r['product_name'] as String),
                     subtitle: Text(
-                        '${(r['stores'] as Map?)?['name'] ?? ''}, ${r['sale_date']}'),
+                        '${(r['stores'] as Map?)?['name'] ?? ''}, ${fmtDate(r['sale_date'])}'),
                     trailing: Text('${r['units_sold']} unit'),
                   ),
               ],

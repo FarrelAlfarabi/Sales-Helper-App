@@ -19,7 +19,7 @@ class AttendanceReportScreen extends StatefulWidget {
   State<AttendanceReportScreen> createState() => _AttendanceReportScreenState();
 }
 
-class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
+class _AttendanceReportScreenState extends State<AttendanceReportScreen> with SafeSetState<AttendanceReportScreen> {
   List<Map<String, dynamic>> _records = [];
   bool _loading = true;
   String? _error;
@@ -50,7 +50,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       final rows = await q.order('clock_in_at', ascending: false).limit(200);
       setState(() => _records = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat absensi: $e');
+      setState(() => _error = 'Gagal memuat absensi: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -236,7 +236,8 @@ class PresenceDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           ZoneMap(point: LatLng(lat, lng)),
           const SizedBox(height: 6),
-          Text('Akurasi GPS: ${r['clock_in_accuracy_meters'] ?? 'n/a'}m',
+          Text(
+              'Akurasi GPS: ${(r['clock_in_accuracy_meters'] as num?) == null ? 'tidak tercatat' : '${(r['clock_in_accuracy_meters'] as num).round()} m'}',
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),

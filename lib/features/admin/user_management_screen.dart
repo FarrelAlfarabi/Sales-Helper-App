@@ -21,7 +21,7 @@ class UserManagementScreen extends StatefulWidget {
   State<UserManagementScreen> createState() => _UserManagementScreenState();
 }
 
-class _UserManagementScreenState extends State<UserManagementScreen> {
+class _UserManagementScreenState extends State<UserManagementScreen> with SafeSetState<UserManagementScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -66,7 +66,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       }
 
       setState(() {
-        _successMessage = 'Created ${_emailController.text.trim()} as $_role.';
+        _successMessage =
+            'Akun ${_emailController.text.trim()} dibuat sebagai ${kRoleLabels[_role] ?? _role}.';
         _emailController.clear();
         _passwordController.clear();
         _fullNameController.clear();
@@ -78,7 +79,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       setState(() =>
           _error = message?.toString() ?? 'Permintaan gagal (${e.status}).');
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

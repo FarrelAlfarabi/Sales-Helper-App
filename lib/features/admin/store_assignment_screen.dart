@@ -15,7 +15,7 @@ class StoreAssignmentScreen extends StatefulWidget {
   State<StoreAssignmentScreen> createState() => _StoreAssignmentScreenState();
 }
 
-class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
+class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> with SafeSetState<StoreAssignmentScreen> {
   List<Map<String, dynamic>> _employees = [];
   List<Map<String, dynamic>> _stores = [];
   List<Map<String, dynamic>> _assignments = [];
@@ -56,7 +56,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
         _assignments = List<Map<String, dynamic>>.from(assignments);
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat: $e');
+      setState(() => _error = 'Gagal memuat: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -80,7 +80,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
       }, onConflict: 'employee_id,store_id');
       await _load();
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       setState(() => _submitting = false);
     }
@@ -93,7 +93,7 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
           .update({'is_active': false}).eq('id', id);
       await _load();
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     }
   }
 
@@ -157,12 +157,18 @@ class _StoreAssignmentScreenState extends State<StoreAssignmentScreen> {
                 const Divider(height: 32),
                 const Text('Penugasan saat ini',
                     style: TextStyle(fontWeight: FontWeight.bold)),
+                if (_assignments.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Belum ada penugasan aktif.'),
+                  ),
                 for (final a in _assignments)
                   ListTile(
                     title:
-                        Text('${(a['profiles'] as Map?)?['full_name'] ?? '?'} '
-                            '-> ${(a['stores'] as Map?)?['name'] ?? '?'}'),
+                        Text('${(a['profiles'] as Map?)?['full_name'] ?? 'Karyawan'} '
+                            'di ${(a['stores'] as Map?)?['name'] ?? 'toko'}'),
                     trailing: IconButton(
+                      tooltip: 'Cabut penugasan',
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: () => _deactivate(a['id'] as String),
                     ),

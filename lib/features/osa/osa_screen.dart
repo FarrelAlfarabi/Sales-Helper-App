@@ -12,15 +12,18 @@ import '../../core/supabase_client.dart';
 /// Not run on a real device -- no Flutter SDK available in this
 /// environment. Needs verification on actual hardware before shipping.
 class OsaScreen extends StatefulWidget {
-  const OsaScreen({super.key, required this.storeVisitId});
+  const OsaScreen({super.key, required this.storeVisitId, this.notice});
 
   final String storeVisitId;
+
+  /// Peringatan dari check-in (mis. di luar zona), ditampilkan di atas.
+  final String? notice;
 
   @override
   State<OsaScreen> createState() => _OsaScreenState();
 }
 
-class _OsaScreenState extends State<OsaScreen> {
+class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
   static const _placementLabels = {
     'main_shelf': 'Rak Utama',
     'checkout_display': 'Display Kasir',
@@ -50,9 +53,11 @@ class _OsaScreenState extends State<OsaScreen> {
             ? _restockNote.text.trim()
             : null,
       }).eq('id', widget.storeVisitId);
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      if (!mounted) return;
+      showToast(context, 'Kunjungan tersimpan.');
+      Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (e) {
-      setState(() => _error = 'Gagal menyimpan permintaan restock: $e');
+      setState(() => _error = 'Gagal menyimpan permintaan restock: ${friendlyError(e)}');
     } finally {
       if (mounted) setState(() => _finishing = false);
     }
@@ -89,7 +94,7 @@ class _OsaScreenState extends State<OsaScreen> {
 
       setState(() => _saved[placementType] = true);
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       setState(() => _saving[placementType] = false);
     }
@@ -105,11 +110,29 @@ class _OsaScreenState extends State<OsaScreen> {
           actions: const [HelpButton(HelpTopic.osa)],
         bottom: const HelpBar(HelpTopic.osa),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (widget.notice != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFBE8CC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Icon(Icons.warning_amber_rounded, color: Color(0xFF9A4A05)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(widget.notice!,
+                        style: const TextStyle(color: Color(0xFF5C2C03))),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 16),
+            ],
             Text(
               'Foto setiap lokasi rak yang sesuai.',
               style: Theme.of(context).textTheme.bodyMedium,

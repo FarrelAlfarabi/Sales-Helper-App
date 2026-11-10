@@ -25,7 +25,7 @@ class _RepRow {
   int get outside => visits.where((v) => v['is_within_geofence'] == false).length;
 }
 
-class _DailyVisitSummaryScreenState extends State<DailyVisitSummaryScreen> {
+class _DailyVisitSummaryScreenState extends State<DailyVisitSummaryScreen> with SafeSetState<DailyVisitSummaryScreen> {
   DateTime _day = DateTime.now();
   bool _loading = true;
   String? _error;
@@ -78,7 +78,7 @@ class _DailyVisitSummaryScreenState extends State<DailyVisitSummaryScreen> {
         });
       setState(() => _rows = rows);
     } catch (e) {
-      setState(() => _error = 'Gagal memuat ringkasan kunjungan: $e');
+      setState(() => _error = 'Gagal memuat ringkasan kunjungan: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }

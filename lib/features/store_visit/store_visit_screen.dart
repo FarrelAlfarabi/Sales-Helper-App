@@ -26,7 +26,7 @@ class StoreVisitScreen extends StatefulWidget {
   State<StoreVisitScreen> createState() => _StoreVisitScreenState();
 }
 
-class _StoreVisitScreenState extends State<StoreVisitScreen> {
+class _StoreVisitScreenState extends State<StoreVisitScreen> with SafeSetState<StoreVisitScreen> {
   List<Map<String, dynamic>> _assignedStores = [];
   String? _selectedStoreId;
   bool _loading = true;
@@ -56,7 +56,7 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
             rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat toko tugas: $e');
+      setState(() => _error = 'Gagal memuat toko tugas: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -125,19 +125,20 @@ class _StoreVisitScreenState extends State<StoreVisitScreen> {
 
       if (!mounted) return;
 
-      if (isWithinGeofence == false) {
-        setState(() => _error =
-            'Kunjungan tercatat, tetapi kamu berada ${distance?.toStringAsFixed(0)}m dari toko '
-                '-- di luar geofence. Ini akan ditandai di laporan.');
-      }
+      // Peringatan luar zona ditampilkan di layar berikutnya, karena layar
+      // ini langsung tertutup oleh Ketersediaan di Rak.
+      final notice = isWithinGeofence == false
+          ? 'Kunjungan tercatat, tetapi kamu berada ${distance?.toStringAsFixed(0) ?? '?'} m dari toko, di luar zona. Ini ditandai di laporan manajer.'
+          : null;
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => OsaScreen(storeVisitId: inserted['id'] as String),
+          builder: (_) => OsaScreen(
+              storeVisitId: inserted['id'] as String, notice: notice),
         ),
       );
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

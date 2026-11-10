@@ -22,7 +22,7 @@ class StoreVisitReportScreen extends StatefulWidget {
   State<StoreVisitReportScreen> createState() => _StoreVisitReportScreenState();
 }
 
-class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
+class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> with SafeSetState<StoreVisitReportScreen> {
   List<Map<String, dynamic>> _visits = [];
   bool _loading = true;
   String? _error;
@@ -50,7 +50,7 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
           .limit(200);
       setState(() => _visits = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat kunjungan toko: $e');
+      setState(() => _error = 'Gagal memuat kunjungan toko: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
@@ -92,13 +92,13 @@ class _StoreVisitReportScreenState extends State<StoreVisitReportScreen> {
                               : Colors.orange,
                         ),
                         title: Text(
-                          '${(v['profiles'] as Map?)?['full_name'] ?? '?'} -> '
-                          '${(v['stores'] as Map?)?['name'] ?? '?'}',
+                          '${(v['profiles'] as Map?)?['full_name'] ?? 'Karyawan'} di '
+                          '${(v['stores'] as Map?)?['name'] ?? 'toko'}',
                         ),
                         subtitle: Text(
-                          '${v['visit_started_at']}\n'
-                          'Jarak: ${(v['distance_from_store_meters'] as num?)?.toStringAsFixed(0) ?? '?'}m '
-                          '(${v['is_within_geofence'] == true ? 'inside zone' : 'OUTSIDE zone'})',
+                          '${fmtDateTime(v['visit_started_at'])}\n'
+                          'Jarak ${(v['distance_from_store_meters'] as num?)?.toStringAsFixed(0) ?? '?'} m dari toko, '
+                          '${v['is_within_geofence'] == true ? 'dalam zona' : 'luar zona'}',
                         ),
                         isThreeLine: true,
                         onTap: () => Navigator.of(context).push(

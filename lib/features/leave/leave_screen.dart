@@ -16,7 +16,7 @@ class LeaveScreen extends StatefulWidget {
   State<LeaveScreen> createState() => _LeaveScreenState();
 }
 
-class _LeaveScreenState extends State<LeaveScreen> {
+class _LeaveScreenState extends State<LeaveScreen> with SafeSetState<LeaveScreen> {
   static const _statusId = {
     'pending': 'menunggu',
     'approved': 'disetujui',
@@ -53,18 +53,21 @@ class _LeaveScreenState extends State<LeaveScreen> {
           .order('start_date', ascending: false);
       setState(() => _requests = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat pengajuan cuti: $e');
+      setState(() => _error = 'Gagal memuat pengajuan cuti: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
   }
 
   Future<void> _cancel(String id) async {
+    final ok = await confirmDialog(context,
+        title: 'Batalkan pengajuan ini?', yes: 'Batalkan', no: 'Tidak');
+    if (!ok) return;
     try {
       await supabase.from('leave_requests').delete().eq('id', id);
       await _loadRequests();
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     }
   }
 
@@ -74,7 +77,10 @@ class _LeaveScreenState extends State<LeaveScreen> {
       isScrollControlled: true,
       builder: (_) => const _NewLeaveRequestSheet(),
     );
-    if (result == true) _loadRequests();
+    if (result == true) {
+      _loadRequests();
+      if (mounted) showToast(context, 'Pengajuan terkirim.');
+    }
   }
 
   @override
@@ -111,7 +117,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                       child: ListTile(
                         title: Text(
                           '${_typeLabels[r['leave_type']] ?? r['leave_type']}: '
-                          '${r['start_date']} to ${r['end_date']}',
+                          '${fmtDateRange(r['start_date'], r['end_date'])}',
                         ),
                         subtitle: Text(
                           'Status: ${_statusId[r['status']] ?? r['status']}'
@@ -120,6 +126,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
                         isThreeLine: r['reason'] != null,
                         trailing: r['status'] == 'pending'
                             ? IconButton(
+                                tooltip: 'Batalkan pengajuan',
                                 icon: const Icon(Icons.cancel_outlined),
                                 onPressed: () => _cancel(r['id'] as String),
                               )
@@ -140,7 +147,7 @@ class _NewLeaveRequestSheet extends StatefulWidget {
   State<_NewLeaveRequestSheet> createState() => _NewLeaveRequestSheetState();
 }
 
-class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
+class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> with SafeSetState<_NewLeaveRequestSheet> {
   String _type = 'sick';
   DateTime? _start;
   DateTime? _end;
@@ -158,7 +165,7 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: now,
+      initialDate: (isStart ? _start : (_end ?? _start)) ?? now,
       firstDate: now.subtract(const Duration(days: 30)),
       lastDate: now.add(const Duration(days: 365)),
     );
@@ -198,7 +205,7 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
 
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      setState(() => _error = '$e');
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -236,7 +243,7 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
             contentPadding: EdgeInsets.zero,
             title: Text(_start == null
                 ? 'Tanggal mulai'
-                : _start.toString().split(' ').first),
+                : 'Mulai: ${fmtDate(_start!.toIso8601String().substring(0, 10))}'),
             trailing: const Icon(Icons.calendar_today),
             onTap: () => _pickDate(isStart: true),
           ),
@@ -244,7 +251,7 @@ class _NewLeaveRequestSheetState extends State<_NewLeaveRequestSheet> {
             contentPadding: EdgeInsets.zero,
             title: Text(_end == null
                 ? 'Tanggal selesai'
-                : _end.toString().split(' ').first),
+                : 'Selesai: ${fmtDate(_end!.toIso8601String().substring(0, 10))}'),
             trailing: const Icon(Icons.calendar_today),
             onTap: () => _pickDate(isStart: false),
           ),

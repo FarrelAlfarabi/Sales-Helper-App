@@ -15,7 +15,7 @@ class SummaryScreen extends StatefulWidget {
   State<SummaryScreen> createState() => _SummaryScreenState();
 }
 
-class _SummaryScreenState extends State<SummaryScreen> {
+class _SummaryScreenState extends State<SummaryScreen> with SafeSetState<SummaryScreen> {
   bool _loading = true;
   String? _error;
   int _days = 0, _visits = 0, _inside = 0, _leave = 0, _pending = 0;
@@ -65,7 +65,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
         _pending = lv.where((l) => l['status'] == 'pending').length;
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat ringkasan: $e');
+      setState(() => _error = 'Gagal memuat ringkasan: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }

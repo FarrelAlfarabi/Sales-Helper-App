@@ -12,7 +12,7 @@ class SalesPriceScreen extends StatefulWidget {
   State<SalesPriceScreen> createState() => _SalesPriceScreenState();
 }
 
-class _SalesPriceScreenState extends State<SalesPriceScreen> {
+class _SalesPriceScreenState extends State<SalesPriceScreen> with SafeSetState<SalesPriceScreen> {
   bool _loading = true;
   String? _error;
   int _units = 0;
@@ -79,7 +79,7 @@ class _SalesPriceScreenState extends State<SalesPriceScreen> {
         _prices = priceRows.take(10).toList();
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat: $e');
+      setState(() => _error = 'Gagal memuat: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }

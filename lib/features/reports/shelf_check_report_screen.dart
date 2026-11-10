@@ -16,7 +16,7 @@ class ShelfCheckReportScreen extends StatefulWidget {
   State<ShelfCheckReportScreen> createState() => _ShelfCheckReportScreenState();
 }
 
-class _ShelfCheckReportScreenState extends State<ShelfCheckReportScreen> {
+class _ShelfCheckReportScreenState extends State<ShelfCheckReportScreen> with SafeSetState<ShelfCheckReportScreen> {
   List<Map<String, dynamic>> _rows = [];
   bool _loading = true;
   String? _error;
@@ -42,7 +42,7 @@ class _ShelfCheckReportScreenState extends State<ShelfCheckReportScreen> {
           .limit(100);
       setState(() => _rows = List<Map<String, dynamic>>.from(rows));
     } catch (e) {
-      setState(() => _error = 'Gagal memuat riwayat cek rak: $e');
+      setState(() => _error = 'Gagal memuat riwayat cek rak: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }

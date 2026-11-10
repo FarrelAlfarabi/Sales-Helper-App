@@ -26,7 +26,7 @@ class _Attn {
   final bool warn;
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen> with SafeSetState<DashboardScreen> {
   bool _loading = true;
   String? _error;
   int _present = 0, _visits = 0, _outside = 0, _gaps = 0, _pending = 0;
@@ -127,7 +127,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ..addAll(attn);
       });
     } catch (e) {
-      setState(() => _error = 'Gagal memuat dasbor: $e');
+      setState(() => _error = 'Gagal memuat dasbor: ${friendlyError(e)}');
     } finally {
       setState(() => _loading = false);
     }
