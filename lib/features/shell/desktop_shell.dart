@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../today/today_screen.dart';
 import '../../core/theme_controller.dart';
 
 import '../../core/help.dart';
@@ -68,6 +69,7 @@ class _DesktopShellState extends State<DesktopShell> with SafeSetState<DesktopSh
     if (!widget.isManager) {
       return [
         _Group('Pekerjaanmu', [
+          _Item('Hari ini', Icons.today_outlined, () => TodayScreen(name: widget.name, embedded: true)),
           _Item('Absensi', Icons.fingerprint, () => const ClockInScreen()),
           _Item('Kunjungan toko', Icons.storefront_outlined, () => const StoreVisitScreen()),
           _Item('Cek rak', Icons.photo_camera_outlined, () => const ShelfCheckScreen()),

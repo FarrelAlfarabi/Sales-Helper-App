@@ -118,3 +118,23 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog>
     );
   }
 }
+
+/// Tombol akun di AppBar: ganti kata sandi dan keluar.
+class AccountMenuButton extends StatelessWidget {
+  const AccountMenuButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: 'Akun',
+      icon: const Icon(Icons.account_circle_outlined),
+      onSelected: (v) => v == 'password'
+          ? showChangePasswordDialog(context)
+          : confirmSignOut(context),
+      itemBuilder: (_) => const [
+        PopupMenuItem(value: 'password', child: Text('Ganti kata sandi')),
+        PopupMenuItem(value: 'logout', child: Text('Keluar')),
+      ],
+    );
+  }
+}

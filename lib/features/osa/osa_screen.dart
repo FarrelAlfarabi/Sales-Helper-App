@@ -4,6 +4,10 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/photo_capture.dart';
 import '../../core/supabase_client.dart';
+import '../execution/execution_form_screen.dart';
+import '../pricing/pricing_screen.dart';
+import '../sales/sales_entry_screen.dart';
+import '../shelf_check/shelf_check_screen.dart';
 
 /// On Shelf Availability: log product placement photos for a store visit
 /// (main shelf, checkout/COC cashier display, secondary display). Matches
@@ -12,9 +16,17 @@ import '../../core/supabase_client.dart';
 /// Not run on a real device -- no Flutter SDK available in this
 /// environment. Needs verification on actual hardware before shipping.
 class OsaScreen extends StatefulWidget {
-  const OsaScreen({super.key, required this.storeVisitId, this.notice});
+  const OsaScreen({
+    super.key,
+    required this.storeVisitId,
+    required this.storeId,
+    this.storeName = '',
+    this.notice,
+  });
 
   final String storeVisitId;
+  final String storeId;
+  final String storeName;
 
   /// Peringatan dari check-in (mis. di luar zona), ditampilkan di atas.
   final String? notice;
@@ -52,6 +64,8 @@ class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
         'restock_note': _restock && _restockNote.text.trim().isNotEmpty
             ? _restockNote.text.trim()
             : null,
+        // Lama kunjungan: dicatat saat sales menekan selesai.
+        'visit_ended_at': DateTime.now().toUtc().toIso8601String(),
       }).eq('id', widget.storeVisitId);
       if (!mounted) return;
       showToast(context, 'Kunjungan tersimpan.');
@@ -62,6 +76,9 @@ class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
       if (mounted) setState(() => _finishing = false);
     }
   }
+
+  void _open(Widget screen) =>
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
   final Map<String, bool> _saving = {};
   final Map<String, bool> _saved = {};
@@ -106,7 +123,7 @@ class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Ketersediaan di Rak'),
+          title: Text(widget.storeName.isEmpty ? 'Di toko' : widget.storeName),
           actions: const [HelpButton(HelpTopic.osa)],
         bottom: const HelpBar(HelpTopic.osa),
       ),
@@ -133,8 +150,14 @@ class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
               ),
               const SizedBox(height: 16),
             ],
+            Text('1. Foto rak',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
             Text(
-              'Foto setiap lokasi rak yang sesuai.',
+              'Foto setiap lokasi rak yang ada di toko ini. Boleh dilewati jika tidak ada.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -177,7 +200,42 @@ class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
                       : () => _logPlacement(entry.key),
                 ),
               ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            Text('2. Lainnya di toko ini (opsional)',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              _MoreChip(
+                icon: Icons.auto_awesome_outlined,
+                label: 'Cek rak dengan AI',
+                onTap: () => _open(ShelfCheckScreen(initialStoreId: widget.storeId)),
+              ),
+              _MoreChip(
+                icon: Icons.campaign_outlined,
+                label: 'Foto kampanye',
+                onTap: () => _open(ExecutionFormScreen(initialStoreId: widget.storeId)),
+              ),
+              _MoreChip(
+                icon: Icons.point_of_sale,
+                label: 'Catat penjualan',
+                onTap: () => _open(SalesEntryScreen(initialStoreId: widget.storeId)),
+              ),
+              _MoreChip(
+                icon: Icons.sell_outlined,
+                label: 'Catat harga',
+                onTap: () => _open(PricingScreen(initialStoreId: widget.storeId)),
+              ),
+            ]),
+            const SizedBox(height: 20),
+            Text('3. Selesai',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -207,11 +265,25 @@ class _OsaScreenState extends State<OsaScreen> with SafeSetState<OsaScreen> {
             const SizedBox(height: 12),
             FilledButton(
               onPressed: _finishing ? null : _finish,
-              child: Text(_finishing ? 'Menyimpan...' : 'Selesai'),
+              child: Text(_finishing ? 'Menyimpan...' : 'Selesai kunjungan'),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _MoreChip extends StatelessWidget {
+  const _MoreChip({required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ActionChip(
+        avatar: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        label: Text(label),
+        onPressed: onTap,
+      );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/help.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/product_field.dart';
 import '../../core/supabase_client.dart';
 
 /// Sales entry: a rep records units sold for a product at an assigned store
@@ -9,7 +10,10 @@ import '../../core/supabase_client.dart';
 /// because the app had no sales numbers at all. ASSUMPTION: units per
 /// product per day is enough to start; revenue/price can be added later.
 class SalesEntryScreen extends StatefulWidget {
-  const SalesEntryScreen({super.key});
+  const SalesEntryScreen({super.key, this.initialStoreId});
+
+  /// Toko yang sudah dipilih (dibuka dari alur kunjungan toko).
+  final String? initialStoreId;
 
   @override
   State<SalesEntryScreen> createState() => _SalesEntryScreenState();
@@ -21,7 +25,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> with SafeSetState<S
   final _units = TextEditingController();
   List<Map<String, dynamic>> _stores = [];
   List<Map<String, dynamic>> _recent = [];
-  String? _storeId;
+  late String? _storeId = widget.initialStoreId;
   DateTime _date = DateTime.now();
   bool _loading = true;
   bool _saving = false;
@@ -57,6 +61,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> with SafeSetState<S
       setState(() {
         _stores = rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
         _recent = List<Map<String, dynamic>>.from(recent);
+        if (!_stores.any((s) => s['id'] == _storeId)) _storeId = null;
         _storeId ??= _stores.isEmpty ? null : _stores.first['id'] as String;
       });
     } catch (e) {
@@ -135,14 +140,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> with SafeSetState<S
                           onChanged: (v) => setState(() => _storeId = v),
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _product,
-                          decoration:
-                              const InputDecoration(labelText: 'Produk'),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Produk wajib diisi'
-                              : null,
-                        ),
+                        ProductField(controller: _product),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _units,

@@ -14,7 +14,10 @@ import 'shelf_actions.dart';
 /// shelf front, so results are prompts to check, not stock counts.
 /// Needs migration 20261030100000 and the deployed function.
 class ShelfCheckScreen extends StatefulWidget {
-  const ShelfCheckScreen({super.key});
+  const ShelfCheckScreen({super.key, this.initialStoreId});
+
+  /// Toko yang sudah dipilih (dibuka dari alur kunjungan toko).
+  final String? initialStoreId;
 
   @override
   State<ShelfCheckScreen> createState() => _ShelfCheckScreenState();
@@ -24,7 +27,7 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> with SafeSetState<S
   final _brands = TextEditingController();
   List<Map<String, dynamic>> _stores = [];
   List<Map<String, dynamic>> _history = [];
-  String? _storeId;
+  late String? _storeId = widget.initialStoreId;
   bool _loading = true;
   bool _busy = false;
   String? _error;
@@ -59,6 +62,7 @@ class _ShelfCheckScreenState extends State<ShelfCheckScreen> with SafeSetState<S
       setState(() {
         _stores = rows.map((r) => r['stores'] as Map<String, dynamic>).toList();
         _history = List<Map<String, dynamic>>.from(hist);
+        if (!_stores.any((s) => s['id'] == _storeId)) _storeId = null;
         _storeId ??= _stores.isEmpty ? null : _stores.first['id'] as String;
       });
     } catch (e) {
