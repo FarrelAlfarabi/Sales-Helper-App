@@ -18,6 +18,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { withCors } from "../_shared/cors.ts";
 
 const ADMIN_EMAIL = (Deno.env.get("ADMIN_EMAIL") ?? "farrel.abi.saleh@gmail.com").toLowerCase();
 
@@ -27,7 +28,7 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const ALLOWED_ROLES = ["field_rep", "manager", "admin"];
 
-Deno.serve(async (req: Request) => {
+Deno.serve(withCors(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
   }
@@ -103,4 +104,4 @@ Deno.serve(async (req: Request) => {
     JSON.stringify({ id: created.user?.id, email: created.user?.email }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
-});
+}));

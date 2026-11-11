@@ -12,6 +12,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { askClaude, json, MODEL, parseJson, type Usage } from "../_shared/claude.ts";
+import { withCors } from "../_shared/cors.ts";
 
 const SYSTEM = `You are a sales analyst for an FMCG field-sales team in Indonesia. You get aggregated data for a period and the previous period.
 Use ONLY the data given. Do not invent numbers, brands or causes. If data is thin or missing for a point, say that in data_gaps instead of guessing.
@@ -24,7 +25,8 @@ Reply with ONLY a JSON object:
  "price_notes":[string],
  "actions":[{"action":string,"who":"rep"|"manager","why":string}],
  "data_gaps":[string]}
-Keep findings to 5 or fewer and actions to 5 or fewer, most important first. "evidence" must quote the numbers you used.`;
+Keep findings to 5 or fewer and actions to 5 or fewer, most important first. "evidence" must quote the numbers you used.
+Keep the reply compact so it is never cut off: at most 4 restock_risks, 4 price_notes and 4 data_gaps, and keep each detail, evidence, why and note under 25 words.`;
 
 type Row = Record<string, unknown>;
 const sumBy = (rows: Row[], key: (r: Row) => string, val: (r: Row) => number) => {
@@ -33,7 +35,7 @@ const sumBy = (rows: Row[], key: (r: Row) => string, val: (r: Row) => number) =>
   return m;
 };
 
-Deno.serve(async (req: Request) => {
+Deno.serve(withCors(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
   const auth = req.headers.get("Authorization");
   if (!auth) return json({ error: "Missing Authorization header" }, 401);
@@ -105,7 +107,7 @@ Deno.serve(async (req: Request) => {
     };
 
     const usage: Usage = { input_tokens: 0, output_tokens: 0, cost_usd: 0 };
-    const reply = await askClaude([{ type: "text", text: `Data for the last ${days} days (and the ${days} days before for sales):\n${JSON.stringify(summary)}` }], SYSTEM, 2500, usage);
+    const reply = await askClaude([{ type: "text", text: `Data for the last ${days} days (and the ${days} days before for sales):\n${JSON.stringify(summary)}` }], SYSTEM, 6000, usage);
     // Best effort: a failed usage log must not lose the result.
     await sb.from("ai_usage").insert({ fn: "sales-insights", model: MODEL, ...usage });
     const insight = parseJson(reply);
@@ -117,4 +119,4 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     return json({ error: (e as Error).message }, 502);
   }
-});
+}));
