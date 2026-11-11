@@ -44,7 +44,8 @@ Reply with ONLY a JSON object, no prose, in exactly this shape:
  "summary":string (2 sentences max, plain words),
  "limits":[string]}
 fullness_pct is your estimate of how full the visible shelf space is. "competitors" lists only when focus brands were given; otherwise return an empty array.
-If the photo is not a shelf or is unusable, set usable false, explain in issue, and return empty arrays and null numbers.`;
+If the photo is not a shelf or is unusable, set usable false, explain in issue, and return empty arrays and null numbers.
+Keep the reply compact so it is never cut off: at most 12 products (merge variants of one brand into one entry), 6 gaps, 6 competitors, 5 placement_issues, 5 analysis items and 5 key_actions. Keep each note, detail and why under 20 words.`;
 
 function toBase64(buf: ArrayBuffer): string {
   const bytes = new Uint8Array(buf);
@@ -78,7 +79,7 @@ Deno.serve(withCors(async (req: Request) => {
     const reply = await askClaude([
       { type: "image", source: { type: "base64", media_type: "image/jpeg", data: toBase64(await file.arrayBuffer()) } },
       { type: "text", text: `Store: ${store?.name ?? "unknown"}. Focus brands: ${(body.focus_brands ?? "").trim().slice(0, 200) || "none given"}. Analyze this shelf photo.` },
-    ], SYSTEM, 4000, usage);
+    ], SYSTEM, 8000, usage);
     // Best effort: a failed usage log must not lose the result.
     await sb.from("ai_usage").insert({ fn: "shelf-check", model: MODEL, ...usage });
     const analysis = parseJson(reply);
