@@ -25,7 +25,8 @@ Reply with ONLY a JSON object:
  "price_notes":[string],
  "actions":[{"action":string,"who":"rep"|"manager","why":string}],
  "data_gaps":[string]}
-Keep findings to 5 or fewer and actions to 5 or fewer, most important first. "evidence" must quote the numbers you used.`;
+Keep findings to 5 or fewer and actions to 5 or fewer, most important first. "evidence" must quote the numbers you used.
+Keep the reply compact so it is never cut off: at most 4 restock_risks, 4 price_notes and 4 data_gaps, and keep each detail, evidence, why and note under 25 words.`;
 
 type Row = Record<string, unknown>;
 const sumBy = (rows: Row[], key: (r: Row) => string, val: (r: Row) => number) => {
@@ -106,7 +107,7 @@ Deno.serve(withCors(async (req: Request) => {
     };
 
     const usage: Usage = { input_tokens: 0, output_tokens: 0, cost_usd: 0 };
-    const reply = await askClaude([{ type: "text", text: `Data for the last ${days} days (and the ${days} days before for sales):\n${JSON.stringify(summary)}` }], SYSTEM, 2500, usage);
+    const reply = await askClaude([{ type: "text", text: `Data for the last ${days} days (and the ${days} days before for sales):\n${JSON.stringify(summary)}` }], SYSTEM, 6000, usage);
     // Best effort: a failed usage log must not lose the result.
     await sb.from("ai_usage").insert({ fn: "sales-insights", model: MODEL, ...usage });
     const insight = parseJson(reply);
