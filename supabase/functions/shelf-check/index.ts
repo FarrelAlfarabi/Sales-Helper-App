@@ -12,6 +12,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { askClaude, json, MODEL, parseJson, type Usage } from "../_shared/claude.ts";
+import { withCors } from "../_shared/cors.ts";
 
 const SYSTEM = `You review one photo of a retail shelf (FMCG: food, drinks, household, personal care) for a field sales rep in Indonesia.
 LANGUAGE: write every free-text value (summary, notes, descriptions, analysis, key actions, limits, gap and issue text) in Bahasa Indonesia, simple and direct. Keep JSON keys and the fixed values ("ok"/"low"/"out", "high"/"medium"/"low", "now"/"this_visit"/"next_visit", "rep"/"manager", "top"/"eye"/"middle"/"bottom"/"unknown") exactly as written in English.
@@ -52,7 +53,7 @@ function toBase64(buf: ArrayBuffer): string {
   return btoa(bin);
 }
 
-Deno.serve(async (req: Request) => {
+Deno.serve(withCors(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
   const auth = req.headers.get("Authorization");
   if (!auth) return json({ error: "Missing Authorization header" }, 401);
@@ -96,4 +97,4 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     return json({ error: (e as Error).message }, 502);
   }
-});
+}));

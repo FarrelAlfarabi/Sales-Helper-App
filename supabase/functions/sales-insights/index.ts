@@ -12,6 +12,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { askClaude, json, MODEL, parseJson, type Usage } from "../_shared/claude.ts";
+import { withCors } from "../_shared/cors.ts";
 
 const SYSTEM = `You are a sales analyst for an FMCG field-sales team in Indonesia. You get aggregated data for a period and the previous period.
 Use ONLY the data given. Do not invent numbers, brands or causes. If data is thin or missing for a point, say that in data_gaps instead of guessing.
@@ -33,7 +34,7 @@ const sumBy = (rows: Row[], key: (r: Row) => string, val: (r: Row) => number) =>
   return m;
 };
 
-Deno.serve(async (req: Request) => {
+Deno.serve(withCors(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
   const auth = req.headers.get("Authorization");
   if (!auth) return json({ error: "Missing Authorization header" }, 401);
@@ -117,4 +118,4 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     return json({ error: (e as Error).message }, 502);
   }
-});
+}));
